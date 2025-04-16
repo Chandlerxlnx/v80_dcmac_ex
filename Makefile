@@ -21,6 +21,6 @@ test:
 	echo $(SCRIPTS)
 	echo $(SRC)
 clean:
-	rm *.log *.jou
+	@rm -rf *.log *.jou
 cleanall:clean
 	rm -rf dcmac_0_ex
