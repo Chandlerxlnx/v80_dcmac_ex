@@ -488,8 +488,8 @@ proc create_root_design { parentCell } {
   ] $xlslice_rx_datapath
 
 
-  # Create instance: versal_cips_0, and set properties
-  set versal_cips_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:versal_cips versal_cips_0 ]
+  # Create instance: cips, and set properties
+  set cips [ create_bd_cell -type ip -vlnv xilinx.com:ip:versal_cips cips ]
   set_property -dict [list \
     CONFIG.PS_PMC_CONFIG { \
       BOOT_MODE {Custom} \
@@ -637,7 +637,7 @@ proc create_root_design { parentCell } {
       SMON_VOLTAGE_AVERAGING_SAMPLES {8} \
     } \
     CONFIG.PS_PMC_CONFIG_APPLIED {1} \
-  ] $versal_cips_0
+  ] $cips
 
 
   # Create interface connections
@@ -657,7 +657,7 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net smartconnect_0_M10_AXI [get_bd_intf_pins axi_gpio_rx_datapath/S_AXI] [get_bd_intf_pins smartconnect_0/M10_AXI]
   connect_bd_intf_net -intf_net smartconnect_0_M11_AXI [get_bd_intf_pins axi_resets_dyn/S_AXI] [get_bd_intf_pins smartconnect_0/M11_AXI]
   connect_bd_intf_net -intf_net smartconnect_0_M12_AXI [get_bd_intf_pins axi_reset_done_dyn/S_AXI] [get_bd_intf_pins smartconnect_0/M12_AXI]
-  connect_bd_intf_net -intf_net versal_cips_0_M_AXI_FPD [get_bd_intf_pins smartconnect_0/S00_AXI] [get_bd_intf_pins versal_cips_0/M_AXI_LPD]
+  connect_bd_intf_net -intf_net cips_M_AXI_FPD [get_bd_intf_pins smartconnect_0/S00_AXI] [get_bd_intf_pins cips/M_AXI_LPD]
 
   # Create port connections
   connect_bd_net -net axi_gpio_gt_ctl_gpio_io_o  [get_bd_pins axi_gpio_gt_ctl/gpio_io_o] \
@@ -691,7 +691,7 @@ proc create_root_design { parentCell } {
   [get_bd_pins axi_reset_done_dyn/gpio2_io_i]
   connect_bd_net -net tx_reset_done  [get_bd_ports gt_tx_reset_done] \
   [get_bd_pins axi_reset_done_dyn/gpio_io_i]
-  connect_bd_net -net versal_cips_0_pl0_ref_clk  [get_bd_pins versal_cips_0/pl0_ref_clk] \
+  connect_bd_net -net cips_pl0_ref_clk  [get_bd_pins cips/pl0_ref_clk] \
   [get_bd_ports pl0_ref_clk_0] \
   [get_bd_pins axi_apb_bridge_0/s_axi_aclk] \
   [get_bd_pins proc_sys_reset_0/slowest_sync_clk] \
@@ -701,8 +701,8 @@ proc create_root_design { parentCell } {
   [get_bd_pins axi_gpio_rx_datapath/s_axi_aclk] \
   [get_bd_pins axi_resets_dyn/s_axi_aclk] \
   [get_bd_pins axi_reset_done_dyn/s_axi_aclk] \
-  [get_bd_pins versal_cips_0/m_axi_lpd_aclk]
-  connect_bd_net -net versal_cips_0_pl0_resetn  [get_bd_pins versal_cips_0/pl0_resetn] \
+  [get_bd_pins cips/m_axi_lpd_aclk]
+  connect_bd_net -net cips_pl0_resetn  [get_bd_pins cips/pl0_resetn] \
   [get_bd_pins proc_sys_reset_0/ext_reset_in]
   connect_bd_net -net xlslice_gt_line_rate_Dout  [get_bd_pins xlslice_gt_line_rate/Dout] \
   [get_bd_ports gt_line_rate]
@@ -732,21 +732,21 @@ proc create_root_design { parentCell } {
   [get_bd_ports tx_serdes_reset]
 
   # Create address segments
-  assign_bd_address -offset 0x80000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs APB_M2_0/Reg] -force
-  assign_bd_address -offset 0x80010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs APB_M3_0/Reg] -force
-  assign_bd_address -offset 0x80020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs APB_M_0/Reg] -force
-  assign_bd_address -offset 0x80030000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs M00_AXI_0/Reg] -force
-  assign_bd_address -offset 0x80040000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs M00_AXI_1/Reg] -force
-  assign_bd_address -offset 0x80050000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs M00_AXI_2/Reg] -force
-  assign_bd_address -offset 0x80060000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs M00_AXI_3/Reg] -force
-  assign_bd_address -offset 0x80070000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs M00_AXI_4/Reg] -force
-  assign_bd_address -offset 0x80080000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs M00_AXI_5/Reg] -force
-  assign_bd_address -offset 0x80090000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs M00_AXI_6/Reg] -force
-  assign_bd_address -offset 0x800A0000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs axi_gpio_gt_ctl/S_AXI/Reg] -force
-  assign_bd_address -offset 0x800B0000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs axi_gpio_rx_datapath/S_AXI/Reg] -force
-  assign_bd_address -offset 0x800C0000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs axi_gpio_tx_datapath/S_AXI/Reg] -force
-  assign_bd_address -offset 0x800D0000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs axi_reset_done_dyn/S_AXI/Reg] -force
-  assign_bd_address -offset 0x800E0000 -range 0x00010000 -target_address_space [get_bd_addr_spaces versal_cips_0/M_AXI_LPD] [get_bd_addr_segs axi_resets_dyn/S_AXI/Reg] -force
+  assign_bd_address -offset 0x80000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs APB_M2_0/Reg] -force
+  assign_bd_address -offset 0x80010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs APB_M3_0/Reg] -force
+  assign_bd_address -offset 0x80020000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs APB_M_0/Reg] -force
+  assign_bd_address -offset 0x80030000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs M00_AXI_0/Reg] -force
+  assign_bd_address -offset 0x80040000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs M00_AXI_1/Reg] -force
+  assign_bd_address -offset 0x80050000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs M00_AXI_2/Reg] -force
+  assign_bd_address -offset 0x80060000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs M00_AXI_3/Reg] -force
+  assign_bd_address -offset 0x80070000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs M00_AXI_4/Reg] -force
+  assign_bd_address -offset 0x80080000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs M00_AXI_5/Reg] -force
+  assign_bd_address -offset 0x80090000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs M00_AXI_6/Reg] -force
+  assign_bd_address -offset 0x800A0000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs axi_gpio_gt_ctl/S_AXI/Reg] -force
+  assign_bd_address -offset 0x800B0000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs axi_gpio_rx_datapath/S_AXI/Reg] -force
+  assign_bd_address -offset 0x800C0000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs axi_gpio_tx_datapath/S_AXI/Reg] -force
+  assign_bd_address -offset 0x800D0000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs axi_reset_done_dyn/S_AXI/Reg] -force
+  assign_bd_address -offset 0x800E0000 -range 0x00010000 -target_address_space [get_bd_addr_spaces cips/M_AXI_LPD] [get_bd_addr_segs axi_resets_dyn/S_AXI/Reg] -force
 
 
   # Restore current instance

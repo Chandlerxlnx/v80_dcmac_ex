@@ -23,4 +23,5 @@ test:
 clean:
 	@rm -rf *.log *.jou
 cleanall:clean
-	rm -rf dcmac_0_ex
+	@rm -rf dcmac_0_ex
+	@rm *.pdi *.xsa *.mmi
