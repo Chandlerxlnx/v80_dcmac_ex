@@ -6,7 +6,7 @@ if {[get_property needs_refresh [get_runs synth_1]]} {
 # walk around the issue that synth is killed somehow.
 set runs 0
 while {$runs < 2 && [get_property STATUS [get_runs synth_1]] !="synth_design Complete!"} {
-	reset_runs [get_runs synth_1]
+    reset_runs [get_runs synth_1]
     launch_runs [get_runs synth_1] -jobs 20
     wait_on_runs [get_runs synth_1]
     incr runs
