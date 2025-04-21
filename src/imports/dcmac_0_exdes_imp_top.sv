@@ -60,8 +60,8 @@ module dcmac_0_exdes_imp_top
     input  wire [3:0] gt_rxp_in1,
     output wire [3:0] gt_txn_out1,
     output wire [3:0] gt_txp_out1,
-    input  wire       gt_ref_clk1_p,
-    input  wire       gt_ref_clk1_n,
+    //input  wire       gt_ref_clk1_p,
+    //input  wire       gt_ref_clk1_n,
     input  wire       gt_ref_clk0_p,
     input  wire       gt_ref_clk0_n,
     //DDR
@@ -249,8 +249,8 @@ dcmac_0_exdes i_dcmac_0_exdes(
     .APB_M4_pwrite   (APB_M4_pwrite ),//input             APB_M4_pwrite,
     .gt_ref_clk0_p       (gt_ref_clk0_p),
     .gt_ref_clk0_n       (gt_ref_clk0_n),
-    .gt_ref_clk1_p       (gt_ref_clk1_p),
-    .gt_ref_clk1_n       (gt_ref_clk1_n),
+    //.gt_ref_clk1_p       (gt_ref_clk1_p),
+    //.gt_ref_clk1_n       (gt_ref_clk1_n),
     .init_clk        (pl0_ref_clk_0)//input  wire       init_clk
 );
    

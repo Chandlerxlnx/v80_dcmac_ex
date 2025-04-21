@@ -193,8 +193,6 @@ proc create_hier_cell_dcmac_0_gt_wrapper { parentCell nameHier } {
   # Create interface pins
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 CLK_IN_D_0
 
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 CLK_IN_D_1
-
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:gt_tx_interface_rtl:1.0 TX0_GT_IP_Interface
 
   create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:gt_tx_interface_rtl:1.0 TX1_GT_IP_Interface
@@ -307,11 +305,6 @@ proc create_hier_cell_dcmac_0_gt_wrapper { parentCell nameHier } {
   # Create instance: util_ds_buf_0, and set properties
   set util_ds_buf_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf util_ds_buf_0 ]
   set_property CONFIG.C_BUF_TYPE {IBUFDS_GTME5} $util_ds_buf_0
-
-
-  # Create instance: util_ds_buf_1, and set properties
-  set util_ds_buf_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf util_ds_buf_1 ]
-  set_property CONFIG.C_BUF_TYPE {IBUFDS_GTME5} $util_ds_buf_1
 
 
   # Create instance: gt_quad_base, and set properties
@@ -557,7 +550,7 @@ MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 0} TXQuad_0_/gt_quad_base_1 {/gt_quad_base_1 dcm
 MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1}} RX_QUAD_CH {RXQuad_-1_/gt_quad_base {/gt_quad_base dcmac_0_exdes_support_dcmac_0_core_0.IP_CH0,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH1,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH2,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH3\
 MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 0} RXQuad_0_/gt_quad_base_1 {/gt_quad_base_1 dcmac_0_exdes_support_dcmac_0_core_0.IP_CH4,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH5,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH6,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH7\
 MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1}}} \
-    CONFIG.REFCLK_LIST {{/CLK_IN_D_1_clk_p[0]}} \
+    CONFIG.REFCLK_LIST {{/CLK_IN_D_0_clk_p[0]}} \
     CONFIG.REFCLK_STRING {HSCLK0_LCPLLGTREFCLK0 refclk_PROT0_R0_322.265625_MHz_unique1} \
     CONFIG.RX0_LANE_SEL {PROT0} \
     CONFIG.RX1_LANE_SEL {PROT0} \
@@ -647,7 +640,6 @@ MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1}}} \
 
   # Create interface connections
   connect_bd_intf_net -intf_net CLK_IN_D_0_1 [get_bd_intf_pins CLK_IN_D_0] [get_bd_intf_pins util_ds_buf_0/CLK_IN_D1]
-  connect_bd_intf_net -intf_net CLK_IN_D_1_1 [get_bd_intf_pins CLK_IN_D_1] [get_bd_intf_pins util_ds_buf_1/CLK_IN_D1]
   connect_bd_intf_net -intf_net dcmac_0_core_gtm_rx_serdes_interface_0 [get_bd_intf_pins RX0_GT_IP_Interface] [get_bd_intf_pins gt_quad_base/RX0_GT_IP_Interface]
   connect_bd_intf_net -intf_net dcmac_0_core_gtm_rx_serdes_interface_1 [get_bd_intf_pins RX1_GT_IP_Interface] [get_bd_intf_pins gt_quad_base/RX1_GT_IP_Interface]
   connect_bd_intf_net -intf_net dcmac_0_core_gtm_rx_serdes_interface_2 [get_bd_intf_pins RX2_GT_IP_Interface] [get_bd_intf_pins gt_quad_base/RX2_GT_IP_Interface]
@@ -838,11 +830,10 @@ MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1}}} \
   [get_bd_pins gt_quad_base_1/apb3presetn] \
   [get_bd_pins gt_quad_base/apb3presetn]
   connect_bd_net -net util_ds_buf_0_IBUFDS_GTME5_O  [get_bd_pins util_ds_buf_0/IBUFDS_GTME5_O] \
-  [get_bd_pins gt_quad_base/GT_REFCLK0]
+  [get_bd_pins gt_quad_base/GT_REFCLK0] \
+  [get_bd_pins gt_quad_base_1/GT_REFCLK0]
   connect_bd_net -net util_ds_buf_0_IBUFDS_GTME5_ODIV2  [get_bd_pins util_ds_buf_0/IBUFDS_GTME5_ODIV2] \
   [get_bd_pins bufg_gt_odiv2/outclk]
-  connect_bd_net -net util_ds_buf_1_IBUFDS_GTME5_O  [get_bd_pins util_ds_buf_1/IBUFDS_GTME5_O] \
-  [get_bd_pins gt_quad_base_1/GT_REFCLK0]
   connect_bd_net -net util_ds_buf_mbufg_rx_0_MBUFG_GT_O1  [get_bd_pins util_ds_buf_mbufg_rx_0/MBUFG_GT_O1] \
   [get_bd_pins ch0_rx_usr_clk_0]
   connect_bd_net -net util_ds_buf_mbufg_rx_0_MBUFG_GT_O2  [get_bd_pins util_ds_buf_mbufg_rx_0/MBUFG_GT_O2] \
@@ -927,11 +918,6 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.FREQ_HZ {322265625} \
    ] $CLK_IN_D_0
-
-  set CLK_IN_D_1 [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 CLK_IN_D_1 ]
-  set_property -dict [ list \
-   CONFIG.FREQ_HZ {322265625} \
-   ] $CLK_IN_D_1
 
   set s_axi [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 s_axi ]
   set_property -dict [ list \
@@ -1355,7 +1341,6 @@ proc create_root_design { parentCell } {
 
   # Create interface connections
   connect_bd_intf_net -intf_net CLK_IN_D_0_1 [get_bd_intf_ports CLK_IN_D_0] [get_bd_intf_pins dcmac_0_gt_wrapper/CLK_IN_D_0]
-  connect_bd_intf_net -intf_net CLK_IN_D_1_1 [get_bd_intf_ports CLK_IN_D_1] [get_bd_intf_pins dcmac_0_gt_wrapper/CLK_IN_D_1]
   connect_bd_intf_net -intf_net ctl_port_1 [get_bd_intf_ports ctl_port] [get_bd_intf_pins dcmac_0_core/ctl_port]
   connect_bd_intf_net -intf_net ctl_txrx_port0_1 [get_bd_intf_ports ctl_txrx_port0] [get_bd_intf_pins dcmac_0_core/ctl_txrx_port0]
   connect_bd_intf_net -intf_net ctl_txrx_port1_1 [get_bd_intf_ports ctl_txrx_port1] [get_bd_intf_pins dcmac_0_core/ctl_txrx_port1]

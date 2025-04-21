@@ -124,8 +124,8 @@ module dcmac_0_exdes
     output wire        gt_rx_reset_core,
     input  wire       gt_ref_clk0_p,
     input  wire       gt_ref_clk0_n,
-    input  wire       gt_ref_clk1_p,
-    input  wire       gt_ref_clk1_n,
+    //input  wire       gt_ref_clk1_p,
+    //input  wire       gt_ref_clk1_n,
     input  wire [8-1:0] gt_reset_tx_datapath_in,
     input  wire [8-1:0] gt_reset_rx_datapath_in,
     input  wire       init_clk
@@ -503,8 +503,8 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   (
   .CLK_IN_D_0_clk_n(gt_ref_clk0_n),
   .CLK_IN_D_0_clk_p(gt_ref_clk0_p),
-  .CLK_IN_D_1_clk_n(gt_ref_clk1_n),
-  .CLK_IN_D_1_clk_p(gt_ref_clk1_p),
+  //.CLK_IN_D_1_clk_n(gt_ref_clk1_n),
+  //.CLK_IN_D_1_clk_p(gt_ref_clk1_p),
   .GT_Serial_grx_n(gt_rxn_in0),
   .GT_Serial_grx_p(gt_rxp_in0),
   .GT_Serial_gtx_n(gt_txn_out0),

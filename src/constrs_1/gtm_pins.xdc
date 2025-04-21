@@ -1,3 +1,4 @@
+#GTM QUAD 209
 set_property PACKAGE_PIN AE67 [get_ports {gt_rxp_in0[0]}]
 set_property PACKAGE_PIN AE68 [get_ports {gt_rxn_in0[0]}]
 set_property PACKAGE_PIN AG61 [get_ports {gt_txp_out0[0]}]
@@ -14,6 +15,8 @@ set_property PACKAGE_PIN AC64 [get_ports {gt_rxp_in0[3]}]
 set_property PACKAGE_PIN AC65 [get_ports {gt_rxn_in0[3]}]
 set_property PACKAGE_PIN AE58 [get_ports {gt_txp_out0[3]}]
 set_property PACKAGE_PIN AE59 [get_ports {gt_txn_out0[3]}]
+
+#GTM QUAD 210
 set_property PACKAGE_PIN AA67 [get_ports {gt_rxp_in1[0]}]
 set_property PACKAGE_PIN AA68 [get_ports {gt_rxn_in1[0]}]
 set_property PACKAGE_PIN AC61 [get_ports {gt_txp_out1[0]}]
