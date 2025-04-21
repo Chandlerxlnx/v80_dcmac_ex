@@ -1,5 +1,10 @@
 #SCRIPTS:=$(wildcard ./scripts/*.tcl)
-SCRIPTS:=$(shell find ./scripts/ -name '*.tcl')
+#SCRIPTS:=$(shell find ./scripts/ -name '*.tcl')
+SCRIPTS:=./scripts/dcmac_o_ex.tcl
+SCRIPTS +=./scripts/dcmac_0_cips.tcl
+SCRIPTS +=./scripts/dcmac_0_exdes_support.tcl
+SCRIPTS +=./scripts/crt_ips.tcl
+
 
 #SRC:=$(wildcard ./src/*/*)
 SRC:=$(shell find ./src/ -name *.sv)
