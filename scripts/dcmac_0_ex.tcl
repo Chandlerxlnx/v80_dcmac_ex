@@ -183,11 +183,13 @@ create_project -force ${_xil_proj_name_} ./${_xil_proj_name_} -part xcv80-lsva47
 # Set the directory path for the new project
 set proj_dir [get_property directory [current_project]]
 
+set_property  ip_repo_paths  ./src/iprepo [current_project]
 # Reconstruct message rules
 # None
 
 # Set project properties
 set obj [current_project]
+if { 0 } {
 set_property -name "default_lib" -value "xil_defaultlib" -objects $obj
 set_property -name "enable_resource_estimation" -value "0" -objects $obj
 set_property -name "enable_vhdl_2008" -value "1" -objects $obj
@@ -207,7 +209,7 @@ set_property -name "webtalk.riviera_export_sim" -value "3" -objects $obj
 set_property -name "webtalk.vcs_export_sim" -value "3" -objects $obj
 set_property -name "webtalk.xsim_export_sim" -value "3" -objects $obj
 set_property -name "xpm_libraries" -value "XPM_CDC XPM_FIFO XPM_MEMORY" -objects $obj
-
+}
 # Create 'sources_1' fileset (if not found)
 if {[string equal [get_filesets -quiet sources_1] ""]} {
   create_fileset -srcset sources_1
@@ -376,11 +378,13 @@ set_property -name "top_auto_set" -value "0" -objects $obj
 # Set 'sources_1' fileset object
 set obj [get_filesets sources_1]
 # Import local files from the original project
-set files [list \
- [file normalize "${origin_dir}/src/sources_1/ip/dcmac_0_clk_wiz_0/dcmac_0_clk_wiz_0.xci" ]\
-]
-set imported_files [import_files -fileset sources_1 $files]
+#
+#set files [list \
+# [file normalize "${origin_dir}/src/sources_1/ip/dcmac_0_clk_wiz_0/dcmac_0_clk_wiz_0.xci" ]\
+#]
+#set imported_files [import_files -fileset sources_1 $files]
 
+source ${origin_dir}/scripts/crt_ips.tcl
 # Set 'sources_1' fileset file properties for remote files
 # None
 
@@ -416,6 +420,8 @@ set file_imported [import_files -fileset constrs_1 [list $file]]
 #set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
 #set_property -name "file_type" -value "XDC" -objects $file_obj
 
+set file "[file normalize ${origin_dir}/src/constrs_1/impl.pins.xdc]"
+set file_imported [import_files -fileset constrs_1 [list $file]]
 # Set 'constrs_1' fileset properties
 set obj [get_filesets constrs_1]
 set_property -name "target_part" -value "xcv80-lsva4737-2MHP-e-S" -objects $obj
@@ -473,7 +479,7 @@ if {[string equal [get_runs -quiet synth_1] ""]} {
     create_run -name synth_1 -part xcv80-lsva4737-2MHP-e-S  -strategy "Vivado Synthesis Defaults" -report_strategy {No Reports} -constrset constrs_1
 } else {
   set_property strategy "Vivado Synthesis Defaults" [get_runs synth_1]
-  set_property flow "Vivado Synthesis 2024" [get_runs synth_1]
+  #set_property flow "Vivado Synthesis 2024" [get_runs synth_1]
 }
 set obj [get_runs synth_1]
 set_property set_report_strategy_name 1 $obj
@@ -494,14 +500,17 @@ set_property -name "strategy" -value "Vivado Synthesis Defaults" -objects $obj
 
 # set the current synth run
 current_run -synthesis [get_runs synth_1]
-
+set ver_num [[version -short]]
 # Create 'impl_1' run (if not found)
 if {[string equal [get_runs -quiet impl_1] ""]} {
     #create_run -name impl_1 -part xcv80-lsva4737-2MHP-e-S -flow {Vivado Advanced Implementation 2024} -strategy "Vivado Advanced Implementation Defaults" -report_strategy {No Reports} -constrset constrs_1 -parent_run synth_1
-    create_run -name impl_1 -part xcv80-lsva4737-2MHP-e-S -strategy "Vivado Advanced Implementation Defaults" -report_strategy {No Reports} -constrset constrs_1 -parent_run synth_1
+    #create_run -name impl_1 -part xcv80-lsva4737-2MHP-e-S -strategy "Vivado Advanced Implementation Defaults" -report_strategy {No Reports} -constrset constrs_1 -parent_run synth_1
+    #create_run -name impl_1 -part xcv80-lsva4737-2MHP-e-S -report_strategy {No Reports} -constrset constrs_1 -parent_run synth_1
 } else {
-  set_property strategy "Vivado Advanced Implementation Defaults" [get_runs impl_1]
-  set_property flow "Vivado Advanced Implementation 2024" [get_runs impl_1]
+	puts "DebugMe: no changing on impl_1"
+  #set_property strategy "Vivado Advanced Implementation Defaults" [get_runs impl_1]
+  
+  #set_property flow "Vivado Advanced Implementation 2024" [get_runs impl_1]
 }
 set obj [get_runs impl_1]
 set_property set_report_strategy_name 1 $obj
@@ -712,11 +721,11 @@ set_property -name "options.report_unconstrained" -value "1" -objects $obj
 #
 #}
 set obj [get_runs impl_1]
-set_property -name "part" -value "xcv80-lsva4737-2MHP-e-S" -objects $obj
-set_property -name "strategy" -value "Vivado Advanced Implementation Defaults" -objects $obj
-set_property -name "steps.place_design.args.subdirective" -value "" -objects $obj
-set_property -name "steps.write_device_image.args.readback_file" -value "0" -objects $obj
-set_property -name "steps.write_device_image.args.verbose" -value "0" -objects $obj
+#set_property -name "part" -value "xcv80-lsva4737-2MHP-e-S" -objects $obj
+#set_property -name "strategy" -value "Vivado Advanced Implementation Defaults" -objects $obj
+#set_property -name "steps.place_design.args.subdirective" -value "" -objects $obj
+#set_property -name "steps.write_device_image.args.readback_file" -value "0" -objects $obj
+#set_property -name "steps.write_device_image.args.verbose" -value "0" -objects $obj
 
 # set the current impl run
 current_run -implementation [get_runs impl_1]
