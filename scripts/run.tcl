@@ -17,7 +17,10 @@ if {[get_property needs_refresh [get_runs impl_1]]} {
 	reset_runs [get_runs impl_1]
 }
 set runs 0
-while {$runs < 2 && [get_property STATUS [get_runs impl_1]] !="synth_design Complete!"} {
+while {$runs < 2 && [get_property STATUS [get_runs impl_1]] !="write_device_image Complete!"} {
+	if {$runs >0} {
+		reset_runs -prev_step [get_runs impl_1]
+	}
 	launch_runs [get_runs impl_1] -to_step write_device_image -jobs 20
 	wait_on_runs [get_runs impl_1]
 	incr runs
