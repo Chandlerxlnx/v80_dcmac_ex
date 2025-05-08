@@ -6,5 +6,6 @@ all:
     image {
         id = 0x1c000000, name=rpu_subsystem, delay_handoff
         { core=r5-0, file=./build/amc.elf  }
+        { core=a72-0, file=./build/dcmac_tst.elf  }
     }
 }
