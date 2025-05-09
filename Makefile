@@ -11,7 +11,7 @@ SRC:=$(shell find ./src/ -name *.sv)
 SRC+=$(shell find ./src/ -name *.xci)
 
 PROJECT:=dcmac_0_ex/dcmac_0_ex.xpr
-XSA=dcmac_0_ex_impl_top.xsa
+XSA=dcmac_0_exdes_imp_top.xsa
 
 all: $(XSA)
 
