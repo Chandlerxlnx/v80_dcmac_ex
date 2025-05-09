@@ -25,5 +25,5 @@ while {$runs < 2 && [get_property STATUS [get_runs impl_1]] !="write_device_imag
 	wait_on_runs [get_runs impl_1]
 	incr runs
 }
-write_hw_platform -fixed -force -include_bit -file ./dcmac_0_ex_impl_top.xsa
+write_hw_platform -fixed -force -include_bit -file ./dcmac_0_exdes_imp_top.xsa
 exit
