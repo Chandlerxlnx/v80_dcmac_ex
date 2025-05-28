@@ -424,7 +424,16 @@ set file "[file normalize ${origin_dir}/src/constrs_1/impl.pins.xdc]"
 set file_imported [import_files -fileset constrs_1 [list $file]]
 # Set 'constrs_1' fileset properties
 set obj [get_filesets constrs_1]
-set_property -name "target_part" -value "xcv80-lsva4737-2MHP-e-S" -objects $obj
+
+ import_files -fileset utils_1   -norecurse "${origin_dir}/src/constrs_1/opt.post.tcl"
+ import_files -fileset utils_1   -norecurse "${origin_dir}/src/constrs_1/place.pre.tcl"
+ import_files -fileset utils_1   -norecurse "${origin_dir}/src/constrs_1/write_device_image.pre.tcl"
+
+ set_property -dict { used_in_synthesis false    processing_order NORMAL } [get_files *pins.xdc]
+
+ set_property STEPS.OPT_DESIGN.TCL.POST         [get_files *opt.post.tcl]                [get_runs impl_1]
+ set_property STEPS.PLACE_DESIGN.TCL.PRE        [get_files *place.pre.tcl]               [get_runs impl_1]
+ set_property STEPS.WRITE_DEVICE_IMAGE.TCL.PRE  [get_files *write_device_image.pre.tcl]  [get_runs impl_1]
 
 # Create 'sim_1' fileset (if not found)
 if {[string equal [get_filesets -quiet sim_1] ""]} {
