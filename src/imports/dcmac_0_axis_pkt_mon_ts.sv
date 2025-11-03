@@ -54,6 +54,7 @@
 module dcmac_0_axis_pkt_mon_ts (
   clk,
   rst,
+  
   port_rst,
   i_pkt,        // packet received from UUT
   i_clear_counters,
@@ -64,9 +65,11 @@ module dcmac_0_axis_pkt_mon_ts (
 );
 
   parameter COUNTER_MODE = 0;  // counter mode or PRBS mode
+  parameter NUM_ID = 6;
+  localparam ID_W = (NUM_ID == 1) ? 1 : $clog2(NUM_ID);
 
   typedef struct packed {
-    logic [2:0]           id;
+    logic [ID_W-1:0]     id;
     logic [11:0]         ena;
     logic [11:0]         sop;
     logic [11:0]         eop;
@@ -79,18 +82,18 @@ module dcmac_0_axis_pkt_mon_ts (
   input  rst;
   input  [5:0] port_rst;
   input  lbus_pkt_t  i_pkt;
-  input  [6-1:0] i_clear_counters;
-  output logic [6-1:0][63:0]  o_pkt_cnt;
-  output logic [6-1:0][63:0]  o_byte_cnt;
-  output logic [6-1:0][31:0]  o_prbs_err_cnt;
-  output logic [6-1:0]        o_prbs_locked;
+  input  [NUM_ID-1:0] i_clear_counters;
+  output logic [NUM_ID-1:0][63:0]  o_pkt_cnt;
+  output logic [NUM_ID-1:0][63:0]  o_byte_cnt;
+  output logic [NUM_ID-1:0][31:0]  o_prbs_err_cnt;
+  output logic [NUM_ID-1:0]        o_prbs_locked;
 
   lbus_pkt_t [3:3] pkt_shift;
   wire [8:8][7:0] merge_size;
   wire [8:8][11:0][127:0] merge_data;
 
   reg   [8:1][11:0] eop;
-  reg   [14:1][2:0] rx_id;
+  reg   [14:1][ID_W-1:0] rx_id;
   wire  [14:14] prbs_locked;
   wire  [14:14] prbs_err;
   reg   [8:8] prbs_locked_pre;
@@ -137,10 +140,10 @@ module dcmac_0_axis_pkt_mon_ts (
   wire [191:0][7:0] byte_out;
   int j_max;
   reg [7:0] byte_nxt;
-  reg [6-1:0][7:0] byte_ctx;
+  reg [NUM_ID-1:0][7:0] byte_ctx;
   reg [191:0] byte_err;
   reg [7:0] byte_err_idx;
-  bit [6-1:0] found_err;
+  bit [NUM_ID-1:0] found_err;
 
   assign byte_out = merge_data[8];
 
@@ -179,11 +182,11 @@ module dcmac_0_axis_pkt_mon_ts (
   );
 
   wire  byte_cnt_carry, pkt_cnt_carry;
-  wire  [2:0] carry_id_m1;
-  wire  [6-1:0][31:0] byte_cnt_upper, byte_cnt_lower, pkt_cnt_upper, pkt_cnt_lower;
+  wire  [ID_W-1:0] carry_id_m1;
+  wire  [NUM_ID-1:0][31:0] byte_cnt_upper, byte_cnt_lower, pkt_cnt_upper, pkt_cnt_lower;
 
   always @* begin
-    for (int i=0; i<6; i++) begin
+    for (int i=0; i<NUM_ID; i++) begin
       o_byte_cnt[i] = {byte_cnt_upper[i], byte_cnt_lower[i]};
       o_pkt_cnt[i] = {pkt_cnt_upper[i], pkt_cnt_lower[i]};
     end

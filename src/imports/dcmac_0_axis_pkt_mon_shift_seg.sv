@@ -58,9 +58,11 @@ module dcmac_0_axis_pkt_mon_shift_seg (
 );
 
   parameter COUNTER_MODE = 0;  // counter mode or PRBS mode
+  parameter NUM_ID = 6;
+  localparam ID_W = (NUM_ID == 1) ? 1 : $clog2(NUM_ID);
 
   typedef struct packed {
-    logic [2:0]           id;
+    logic [ID_W-1:0]     id;
     logic [11:0]         ena;
     logic [11:0]         sop;
     logic [11:0]         eop;

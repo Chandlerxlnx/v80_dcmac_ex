@@ -71,10 +71,11 @@ module dcmac_0_axis_pkt_gen_ts   (
 );
 
   parameter COUNTER_MODE = 0;  // counter mode or PRBS mode
-
+  parameter NUM_ID = 6;
+  localparam ID_W = (NUM_ID == 1) ? 1 : $clog2(NUM_ID);
 
   typedef struct packed {
-    logic [2:0]               id;
+    logic [ID_W-1:0]     id;
     logic [11:0]         ena;
     logic [11:0]         sop;
     logic [11:0]         eop;
@@ -85,7 +86,7 @@ module dcmac_0_axis_pkt_gen_ts   (
 
 
   typedef struct packed {
-    logic [2:0]          id;
+    logic [ID_W-1:0]     id;
     logic [11:0]         ena;
     logic [11:0][15:0]   pkt_len;
     logic [11:0]         sop;
@@ -99,20 +100,20 @@ module dcmac_0_axis_pkt_gen_ts   (
 
   input   clk;
   input   rst;
-  input   [6:0] i_pkt_ena;
+  input   [NUM_ID:0] i_pkt_ena;
   input   [15:0] i_min_len;
   input   [15:0] i_max_len;
-  input   [2:0] i_req_id;
+  input   [ID_W-1:0] i_req_id;
   input   i_req_id_vld;
-  input   [2:0] i_skip_id;
+  input   [ID_W-1:0] i_skip_id;
   input   i_skip;
-  input   [6-1:0] i_af;
-  input   [6-1:0] i_clear_counters;
+  input   [NUM_ID-1:0] i_af;
+  input   [NUM_ID-1:0] i_clear_counters;
   output  o_skip_response;
   output  lbus_pkt_t o_pkt;
   output  o_pkt_vld;
-  output  logic [6-1:0][63:0]  o_byte_cnt;
-  output  logic [6-1:0][63:0]  o_pkt_cnt;
+  output  logic [NUM_ID-1:0][63:0]  o_byte_cnt;
+  output  logic [NUM_ID-1:0][63:0]  o_pkt_cnt;
 
 
   logic [13:0] is_backpressure;
@@ -232,11 +233,11 @@ module dcmac_0_axis_pkt_gen_ts   (
   assign o_pkt = pkt_out[13];
 
   wire  byte_cnt_carry, pkt_cnt_carry;
-  wire  [2:0] carry_id_m1;
-  wire  [6-1:0][31:0] byte_cnt_upper, byte_cnt_lower, pkt_cnt_upper, pkt_cnt_lower;
+  wire  [ID_W-1:0] carry_id_m1;
+  wire  [NUM_ID-1:0][31:0] byte_cnt_upper, byte_cnt_lower, pkt_cnt_upper, pkt_cnt_lower;
 
   always @* begin
-    for (int i=0; i<6; i++) begin
+    for (int i=0; i<NUM_ID; i++) begin
       o_byte_cnt[i] = {byte_cnt_upper[i], byte_cnt_lower[i]};
       o_pkt_cnt[i] = {pkt_cnt_upper[i], pkt_cnt_lower[i]};
     end
@@ -281,9 +282,9 @@ module dcmac_0_axis_pkt_gen_ts   (
   wire [11:0][15:0][7:0] byte_out;
   int j_max;
   reg [7:0] byte_nxt;
-  reg [6-1:0][7:0] byte_ctx;
+  reg [NUM_ID-1:0][7:0] byte_ctx;
   reg [11:0] byte_err;
-  bit [6-1:0] found_err;
+  bit [NUM_ID-1:0] found_err;
 
   assign byte_out = o_pkt.dat;
 

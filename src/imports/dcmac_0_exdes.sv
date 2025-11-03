@@ -53,6 +53,7 @@
 (* DowngradeIPIdentifiedWarnings="yes" *)
 module dcmac_0_exdes
 (
+
     input wire            s_axi_aclk,
     input wire            s_axi_aresetn,
     input wire [31 : 0]   s_axi_awaddr,
@@ -71,6 +72,7 @@ module dcmac_0_exdes
     output wire [1 : 0]   s_axi_rresp,
     output wire           s_axi_rvalid,
     input wire            s_axi_rready,
+    
     input  wire [3:0] gt_rxn_in0,
     input  wire [3:0] gt_rxp_in0,
     output wire [3:0] gt_txn_out0,
@@ -79,7 +81,7 @@ module dcmac_0_exdes
     input  wire [3:0] gt_rxp_in1,
     output wire [3:0] gt_txn_out1,
     output wire [3:0] gt_txp_out1,
-    input  wire       gt_reset_all_in,
+    input  wire [5:0] gt_reset_all_in,
     output wire [31:0] gt_gpo,
     output wire       gt_reset_done,
     input  wire [7:0] gt_line_rate,
@@ -124,8 +126,8 @@ module dcmac_0_exdes
     output wire        gt_rx_reset_core,
     input  wire       gt_ref_clk0_p,
     input  wire       gt_ref_clk0_n,
-    //input  wire       gt_ref_clk1_p,
-    //input  wire       gt_ref_clk1_n,
+//    input  wire       gt_ref_clk1_p,
+//    input  wire       gt_ref_clk1_n,
     input  wire [8-1:0] gt_reset_tx_datapath_in,
     input  wire [8-1:0] gt_reset_rx_datapath_in,
     input  wire       init_clk
@@ -244,7 +246,6 @@ module dcmac_0_exdes
   wire           [5:0] tx_serdes_is_am_prefifo;
   wire           clk_apb3;
   wire           rstn_hard_apb3;
-
   assign clk_apb3       = s_axi_aclk;
   assign rstn_hard_apb3 = s_axi_aresetn;
 
@@ -296,6 +297,8 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   logic               tx_axis_ch_status_vld     ;
   logic               [5:0] tx_axis_id_req      ;
   logic               tx_axis_id_req_vld        ;
+  logic               [5:0] rx_axis_id_req      ;
+  logic               rx_axis_id_req_vld        ;  
   wire                tx_axis_tuser_skip_response;
   // MACIF TX
   wire                tx_macif_ena;
@@ -303,13 +306,18 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   logic               [5:0] tx_macif_ts_id_req; // from calendar
   wire                tx_macif_ts_id_req_rdy;
   logic               tx_macif_ts_id_req_vld;
-  logic               tx_macif_ts_id_req_sic;
+  logic  [5:0]        tx_macif_ts_id_req_sic; 
   wire                [23:0][65:0] tx_macif_data;
   // MACIF RX
   logic               rx_macif_ena;
   logic               rx_macif_status;  
   logic               [23:0][65:0] rx_macif_data;
   logic               [5:0] rx_macif_ts_id;
+
+  wire                [5:0][63:0] tx_frames_transmitted_latched, tx_bytes_transmitted_latched;
+  wire                [5:0][63:0] rx_frames_received_latched, rx_bytes_received_latched;
+  wire                [5:0]       rx_prbs_locked;
+  wire                [5:0][31:0] rx_prbs_err;
 
   wire                [6:0] tx_pkt_gen_ena;
   wire                [15:0] tx_pkt_gen_min_len;
@@ -318,10 +326,6 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   wire                [39:0] clear_rx_counters;
 
 
-  wire                [5:0][63:0] tx_frames_transmitted_latched, tx_bytes_transmitted_latched;
-  wire                [5:0][63:0] rx_frames_received_latched, rx_bytes_received_latched;
-  wire                [5:0]       rx_prbs_locked;
-  wire                [5:0][31:0] rx_prbs_err;
 
 
   axis_tx_pkt_t    tx_gen_axis_pkt, tx_axis_pkt;
@@ -421,11 +425,10 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   reg                 [5:0][55:0] rx_preamble;
   wire                [5:0][55:0] rx_axis_preamble;
 
-  wire [5:0]          rx_flexif_clk = {6{axis_clk}};
-  wire [5:0]          tx_flexif_clk = {6{axis_clk}};
-
-  wire                rx_macif_clk = axis_clk; 
-  wire                tx_macif_clk = axis_clk;
+  wire [5:0]          tx_flexif_clk = 6'h00;
+  wire                tx_macif_clk = 1'b0;  
+  wire [5:0]          rx_flexif_clk = 6'h00;
+  wire                rx_macif_clk = 1'b0; 
   wire                clk_wiz_reset = 1'b0;
 
 
@@ -439,11 +442,12 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
     .clk_out3   (ts_clk)
   );
 
+
   dcmac_0_syncer_reset #(
     .RESET_PIPE_LEN      (3)
   ) i_dcmac_0_gt_rx_reset_done_core_clk_syncer (
     .clk                 (core_clk),
-    .reset_async         (gt_rx_reset_done_inv),
+    .reset_async         (gt_rx_reset_done_inv | rx_core_reset),
     .reset               (gt_rx_reset_done_core_clk_sync)
   );
 
@@ -451,7 +455,7 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
     .RESET_PIPE_LEN      (3)
   ) i_dcmac_0_gt_tx_reset_done_core_clk_syncer (
     .clk                 (core_clk),
-    .reset_async         (gt_tx_reset_done_inv),
+    .reset_async         (gt_tx_reset_done_inv | tx_core_reset),
     .reset               (gt_tx_reset_done_core_clk_sync)
   );
 
@@ -480,11 +484,13 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
    gt_rx_reset_done_inv  <= ~(gt_rx_reset_done_out[4] & gt_rx_reset_done_out[0]);
    gt_tx_reset_done_inv  <= ~(gt_tx_reset_done_out[4] & gt_tx_reset_done_out[0]);
   end 
+
   ///////  Core and Serdes Clocking
-  assign rx_alt_serdes_clk = {1'b0,1'b0,gt1_rx_usrclk2_0,gt1_rx_usrclk2_0,gt0_rx_usrclk2_0,gt0_rx_usrclk2_0};
-  assign tx_alt_serdes_clk = {1'b0,1'b0,gt1_tx_usrclk2_0,gt1_tx_usrclk2_0,gt0_tx_usrclk2_0,gt0_tx_usrclk2_0};
-  assign rx_serdes_clk     = {1'b0,1'b0,gt1_rx_usrclk_0,gt1_rx_usrclk_0,gt0_rx_usrclk_0,gt0_rx_usrclk_0}; 
-  assign tx_serdes_clk     = {1'b0,1'b0,gt1_tx_usrclk_0,gt1_tx_usrclk_0,gt0_tx_usrclk_0,gt0_tx_usrclk_0};
+  assign rx_alt_serdes_clk = {1'b0,1'b0,1'b0,1'b0,gt1_rx_usrclk2_0,gt0_rx_usrclk2_0};
+  assign tx_alt_serdes_clk = {1'b0,1'b0,1'b0,1'b0,gt1_tx_usrclk2_0,gt0_tx_usrclk2_0};
+  assign rx_serdes_clk     = {1'b0,1'b0,1'b0,1'b0,gt1_rx_usrclk_0,gt0_rx_usrclk_0}; 
+  assign tx_serdes_clk     = {1'b0,1'b0,1'b0,1'b0,gt1_tx_usrclk_0,gt0_tx_usrclk_0}; 
+
 
 
   ///// Core Clocks
@@ -493,8 +499,8 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
 
   ///// AXIS Clocks
   assign clk_tx_axi        = axis_clk;
-  assign clk_rx_axi        = axis_clk;
   assign rstn_tx_axi       = clk_wiz_locked & ~gt_tx_reset_done_axis_clk_sync;
+  assign clk_rx_axi        = axis_clk;
   assign rstn_rx_axi       = clk_wiz_locked & ~gt_rx_reset_done_axis_clk_sync;
 
 
@@ -503,8 +509,8 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   (
   .CLK_IN_D_0_clk_n(gt_ref_clk0_n),
   .CLK_IN_D_0_clk_p(gt_ref_clk0_p),
-  //.CLK_IN_D_1_clk_n(gt_ref_clk1_n),
-  //.CLK_IN_D_1_clk_p(gt_ref_clk1_p),
+//  .CLK_IN_D_1_clk_n(gt_ref_clk1_n),
+//  .CLK_IN_D_1_clk_p(gt_ref_clk1_p),
   .GT_Serial_grx_n(gt_rxn_in0),
   .GT_Serial_grx_p(gt_rxp_in0),
   .GT_Serial_gtx_n(gt_txn_out0),
@@ -554,16 +560,16 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   .gtpowergood_1(gtpowergood_1),
   .ctl_port_ctl_rx_custom_vl_length_minus1(default_vl_length_100GE),
   .ctl_port_ctl_tx_custom_vl_length_minus1(default_vl_length_100GE),
-  .ctl_port_ctl_vl_marker_id0(ctl_tx_vl_marker_id0_100ge),
-  .ctl_port_ctl_vl_marker_id1(ctl_tx_vl_marker_id1_100ge),
-  .ctl_port_ctl_vl_marker_id2(ctl_tx_vl_marker_id2_100ge),
-  .ctl_port_ctl_vl_marker_id3(ctl_tx_vl_marker_id3_100ge),
-  .ctl_port_ctl_vl_marker_id4(ctl_tx_vl_marker_id4_100ge),
-  .ctl_port_ctl_vl_marker_id5(ctl_tx_vl_marker_id5_100ge),
-  .ctl_port_ctl_vl_marker_id6(ctl_tx_vl_marker_id6_100ge),
-  .ctl_port_ctl_vl_marker_id7(ctl_tx_vl_marker_id7_100ge),
-  .ctl_port_ctl_vl_marker_id8(ctl_tx_vl_marker_id8_100ge),
-  .ctl_port_ctl_vl_marker_id9(ctl_tx_vl_marker_id9_100ge),
+  .ctl_port_ctl_vl_marker_id0 (ctl_tx_vl_marker_id0_100ge),
+  .ctl_port_ctl_vl_marker_id1 (ctl_tx_vl_marker_id1_100ge),
+  .ctl_port_ctl_vl_marker_id2 (ctl_tx_vl_marker_id2_100ge),
+  .ctl_port_ctl_vl_marker_id3 (ctl_tx_vl_marker_id3_100ge),
+  .ctl_port_ctl_vl_marker_id4 (ctl_tx_vl_marker_id4_100ge),
+  .ctl_port_ctl_vl_marker_id5 (ctl_tx_vl_marker_id5_100ge),
+  .ctl_port_ctl_vl_marker_id6 (ctl_tx_vl_marker_id6_100ge),
+  .ctl_port_ctl_vl_marker_id7 (ctl_tx_vl_marker_id7_100ge),
+  .ctl_port_ctl_vl_marker_id8 (ctl_tx_vl_marker_id8_100ge),
+  .ctl_port_ctl_vl_marker_id9 (ctl_tx_vl_marker_id9_100ge),
   .ctl_port_ctl_vl_marker_id10(ctl_tx_vl_marker_id10_100ge),
   .ctl_port_ctl_vl_marker_id11(ctl_tx_vl_marker_id11_100ge),
   .ctl_port_ctl_vl_marker_id12(ctl_tx_vl_marker_id12_100ge),
@@ -697,7 +703,7 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   .rx_axis_tvalid_1(rx_axis_tvalid[1]),
   .rx_channel_flush(6'd0),
   .rx_core_clk(rx_core_clk),
-  .rx_core_reset(rx_core_reset),
+  .rx_core_reset(gt_rx_reset_done_core_clk_sync),
   .rx_flexif_clk(rx_flexif_clk),
   .rx_lane_aligner_fill(),
   .rx_lane_aligner_fill_start(),
@@ -839,7 +845,7 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   .tx_axis_tvalid_1(tx_gearbox_dout_vld[1] | tx_axi_vld_mask[1]),
   .tx_channel_flush(6'd0),
   .tx_core_clk(tx_core_clk),
-  .tx_core_reset(tx_core_reset),
+  .tx_core_reset(gt_tx_reset_done_core_clk_sync),
   .tx_flexif_clk(tx_flexif_clk),
   .tx_macif_clk(tx_macif_clk),
   .tx_pcs_tdm_stats_data(),
@@ -898,6 +904,9 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   .c5_stat_rx_corrected_lane_delay_valid(c5_stat_rx_corrected_lane_delay_valid),
   .tx_serdes_reset(tx_serdes_reset)
   );
+
+
+
 
 
   //------------------------------------------
@@ -1031,6 +1040,7 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   ) i_dcmac_0_axis_pkt_gen_ts (
     .clk              (clk_tx_axi),
     .rst              (~rstn_tx_axi),
+    
     .i_pkt_ena        ({tx_pkt_gen_ena[6], 1'b0, tx_pkt_gen_ena[2], 1'b0, tx_pkt_gen_ena[1], 1'b0, tx_pkt_gen_ena[0]}),
     .i_clear_counters ({1'b0, clear_tx_counters[2], 1'b0, clear_tx_counters[1], 1'b0, clear_tx_counters[0]}),
     .i_min_len        (tx_pkt_gen_min_len),
@@ -1046,6 +1056,8 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
     .o_pkt_cnt        (tx_frames_transmitted_latched),
     .o_byte_cnt       (tx_bytes_transmitted_latched)
   );
+
+
 
   //------------------------------------------
   // TX gearbox
@@ -1067,6 +1079,8 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
     endcase
 
   end
+
+
 
   dcmac_0_core_sniffer i_dcmac_0_core_sniffer (
     .clk_apb3              (clk_apb3),
@@ -1129,6 +1143,7 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   //------------------------------------------
   // RX gearbox
   //------------------------------------------
+
   assign rx_axis_pkt.ena = rx_axis_pkt_ena;
 
   reg [5:0] rx_gearbox_valid;
@@ -1160,6 +1175,7 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
       end
     //end
   end
+
 
 
   dcmac_0_emu_gearbox_rx  i_dcmac_0_emu_gearbox_rx (
@@ -1197,6 +1213,7 @@ assign gt_rx_reset_core = gt_rx_reset_done_inv;
   ) i_dcmac_0_axis_pkt_mon_ts (
     .clk                   (clk_rx_axi),
     .rst                   (~rstn_rx_axi),
+    
     .port_rst              (rx_gearbox_rst),
     .i_pkt                 (rx_axis_pkt_mon),
     .i_clear_counters      ({1'b0, clear_rx_counters[2], 1'b0, clear_rx_counters[1], 1'b0, clear_rx_counters[0]}),

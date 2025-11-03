@@ -50,7 +50,7 @@
 `timescale 1ps/1ps
 
 (* DowngradeIPIdentifiedWarnings="yes" *)
-module dcmac_0_exdes_imp_top
+module dcmac_0_ex_top
 (
     input  wire [3:0] gt_rxn_in0,
     input  wire [3:0] gt_rxp_in0,

@@ -64,10 +64,12 @@ module dcmac_0_prbs_gen_ts (
   parameter COUNTER_MODE = 0;
   parameter REGISTER_OUTPUT = 1;
   parameter LOAD_SEED = 0;
+  parameter NUM_ID = 6;
+  localparam ID_W = (NUM_ID == 1) ? 1 : $clog2(NUM_ID);
 
   input        clk;
   input        rst;
-  input        [3-1:0] i_id_m1;
+  input        [ID_W-1:0] i_id_m1;
   input        i_req_en;
   input        [8-1:0] i_req_num;
   input        [16-1:0] i_seed;
@@ -118,7 +120,7 @@ module dcmac_0_prbs_gen_ts (
     .i_ena           (i_req_en),
     .i_dat           (seed_i),
     .o_dat           (seed_o),
-    .i_rd_during_wr  (),
+    .i_rd_during_wr  (1'b0),
     .o_init          ()
   );
 

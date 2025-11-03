@@ -67,28 +67,29 @@ module dcmac_0_axis_pkt_cnt (
 );
 
   parameter REGISTER_INPUT = 1;
+parameter NUM_ID = 6;
+localparam ID_W = (NUM_ID == 1) ? 1 : $clog2(NUM_ID);
 
   input   clk;
   input   rst;
-  input   [6-1:0] i_clear_counters;
-  input   [2:0] i_id_m1;
+  input   [NUM_ID-1:0] i_clear_counters;
+  input   [ID_W-1:0] i_id_m1;
   input   [11:0] i_sop;
   input   [11:0] i_eop;
   input   [7:0] i_size;
-  output  reg [6-1:0][31:0] o_byte_cnt;
-  output  reg [6-1:0][31:0] o_pkt_cnt;
-  output  reg [2:0] o_carry_id_m1;
+  output  reg [NUM_ID-1:0][31:0] o_byte_cnt;
+  output  reg [NUM_ID-1:0][31:0] o_pkt_cnt;
+  output  reg [ID_W-1:0] o_carry_id_m1;
   output  reg o_byte_cnt_carry;
   output  reg o_pkt_cnt_carry;
-
 
   wire init;
   logic [7:0] size;
   reg [2:0] rd_during_wr;
-  reg [1:0][6-1:0] clear_rx_counters;
-  reg [6-1:0] clear_rx_pulse;
+  reg [1:0][NUM_ID-1:0] clear_rx_counters;
+  reg [NUM_ID-1:0] clear_rx_pulse;
   reg [2:0] clear_rx_pulse_o;
-  reg [3:0][2:0] id;
+  reg [3:0][ID_W-1:0] id;
   reg [1:0] num_pkt;
   logic [7:0] pkt_cnt_l_i, pkt_cnt_l_o, byte_cnt_l_i, byte_cnt_l_o; // split 32b counter to multiple smaller counters for timing
   logic [8:0] pkt_cnt_nxt_0, byte_cnt_nxt_0;
@@ -97,7 +98,6 @@ module dcmac_0_axis_pkt_cnt (
   reg   [1:0] pkt_cnt_carry, byte_cnt_carry;
   logic [11:0] pkt_cnt_h0_i, pkt_cnt_h0_o, byte_cnt_h0_i, byte_cnt_h0_o;
   logic [11:0] pkt_cnt_h1_i, pkt_cnt_h1_o, byte_cnt_h1_i, byte_cnt_h1_o;
-
 
   always @* begin
     pkt_cnt_nxt_0 = clear_rx_pulse_o[0]? num_pkt: num_pkt + pkt_cnt_l_o;
@@ -146,7 +146,7 @@ module dcmac_0_axis_pkt_cnt (
     o_carry_id_m1 <= id[2];
 
     clear_rx_pulse[id[0]] <= 1'b0;
-    for (int i=0; i<6; i++) begin
+    for (int i=0; i< NUM_ID; i++) begin
       if (clear_rx_counters[0][i] & ~clear_rx_counters[1][i]) begin
         clear_rx_pulse[i] <= 1'b1;
       end

@@ -1,7 +1,7 @@
 all:
 {
     image {
-      { type=bootimage, file=./dcmac_0_ex/dcmac_0_ex.runs/impl_1/dcmac_0_exdes_imp_top.pdi  }
+      { type=bootimage, file=./dcmac_0_ex/dcmac_0_ex.runs/impl_1/dcmac_0_ex_top.pdi  }
     }
     image {
         id = 0x1c000000, name=rpu_subsystem, delay_handoff

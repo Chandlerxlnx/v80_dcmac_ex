@@ -46,7 +46,7 @@
 #    "./imports/dcmac_0_syncer_reset.sv"
 #    "./imports/dcmac_0_ts_context_mem_v2.sv"
 #    "./imports/dcmac_0_tsmac_stats_cnt_external.sv"
-#    "./imports/dcmac_0_exdes_imp_top.sv"
+#    "./imports/dcmac_0_ex_top.sv"
 #    "./dcmac_0_ex.srcs/sources_1/ip/dcmac_0_clk_wiz_0/dcmac_0_clk_wiz_0.xci"
 #    "./imports/dcmac_0_example_top.xdc"
 #    "./dcmac_0_ex.srcs/constrs_1/imports/dcmac_example/gtm_pins.xdc"
@@ -83,7 +83,7 @@ proc checkRequiredFiles { origin_dir} {
  "[file normalize "$origin_dir/src/imports/dcmac_0_syncer_reset.sv"]"\
  "[file normalize "$origin_dir/src/imports/dcmac_0_ts_context_mem_v2.sv"]"\
  "[file normalize "$origin_dir/src/imports/dcmac_0_tsmac_stats_cnt_external.sv"]"\
- "[file normalize "$origin_dir/src/imports/dcmac_0_exdes_imp_top.sv"]"\
+ "[file normalize "$origin_dir/src/imports/dcmac_0_ex_top.sv"]"\
  "[file normalize "$origin_dir/src/constrs_1/imports/dcmac_example/gtm_pins.xdc"]"\
  "[file normalize "$origin_dir/src/imports/dcmac_0_exdes_tb.sv"]"\
   ]
@@ -240,7 +240,7 @@ set files [list \
  [file normalize "${origin_dir}/src/imports/dcmac_0_syncer_reset.sv" ]\
  [file normalize "${origin_dir}/src/imports/dcmac_0_ts_context_mem_v2.sv" ]\
  [file normalize "${origin_dir}/src/imports/dcmac_0_tsmac_stats_cnt_external.sv" ]\
- [file normalize "${origin_dir}/src/imports/dcmac_0_exdes_imp_top.sv" ]\
+ [file normalize "${origin_dir}/src/imports/dcmac_0_ex_top.sv" ]\
 ]
 set imported_files ""
 foreach f $files {
@@ -362,7 +362,7 @@ set file "imports/dcmac_0_tsmac_stats_cnt_external.sv"
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
 
-set file "imports/dcmac_0_exdes_imp_top.sv"
+set file "imports/dcmac_0_ex_top.sv"
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "SystemVerilog" -objects $file_obj
 set_property -name "used_in" -value "synthesis implementation" -objects $file_obj
@@ -372,7 +372,7 @@ set_property -name "used_in_simulation" -value "0" -objects $file_obj
 # Set 'sources_1' fileset properties
 set obj [get_filesets sources_1]
 set_property -name "dataflow_viewer_settings" -value "min_width=16" -objects $obj
-set_property -name "top" -value "dcmac_0_exdes_imp_top" -objects $obj
+set_property -name "top" -value "dcmac_0_ex_top" -objects $obj
 set_property -name "top_auto_set" -value "0" -objects $obj
 
 # Set 'sources_1' fileset object

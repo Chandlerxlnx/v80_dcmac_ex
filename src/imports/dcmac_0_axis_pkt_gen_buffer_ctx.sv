@@ -63,18 +63,21 @@ module dcmac_0_axis_pkt_gen_buffer_ctx (
   o_dat_req
 );
 
+  parameter NUM_ID = 6;
+  localparam ID_W = (NUM_ID == 1) ? 1 : $clog2(NUM_ID);
+
   input  clk;
   input  rst;
   input  i_id_valid_p1;
-  input  [2:0] i_id;
+  input  [ID_W-1:0] i_id;
   input  [7:0] i_size;
-  output reg [2:0] o_id;
+  output reg [ID_W-1:0] o_id;
   output reg [7:0] o_buf_size;
   output reg [7:0] o_buf_idx;
   output reg o_dat_req;
 
 
-  reg   [1:1][2:0] id;
+  reg   [1:1][ID_W-1:0] id;
   reg   [1:1][7:0] size, size_c, size_m1;
   wire  [1:1] need_new_ena_i, need_new_ena_o;
   wire  [1:1][1:0][7:0] buf_size_i;
@@ -119,7 +122,7 @@ module dcmac_0_axis_pkt_gen_buffer_ctx (
     .i_ena           (i_id_valid_p1),
     .i_dat           ({buf_size_i[1][0], buf_idx_i[1][0]}),
     .o_dat           ({buf_size_o[1][0], buf_idx_o[1][0]}),
-    .i_rd_during_wr  (),
+    .i_rd_during_wr  (1'b0),
     .o_init          ()
   );
 
@@ -136,7 +139,7 @@ module dcmac_0_axis_pkt_gen_buffer_ctx (
     .i_ena           (i_id_valid_p1),
     .i_dat           ({buf_size_i[1][1], buf_idx_i[1][1]}),
     .o_dat           ({buf_size_o[1][1], buf_idx_o[1][1]}),
-    .i_rd_during_wr  (),
+    .i_rd_during_wr  (1'b0),
     .o_init          ()
   );
 
@@ -152,7 +155,7 @@ module dcmac_0_axis_pkt_gen_buffer_ctx (
     .i_ena           (i_id_valid_p1),
     .i_dat           (need_new_ena_i[1]),
     .o_dat           (need_new_ena_o[1]),
-    .i_rd_during_wr  (),
+    .i_rd_during_wr  (1'b0),
     .o_init          ()
   );
 

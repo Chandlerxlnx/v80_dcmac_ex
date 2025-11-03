@@ -63,10 +63,12 @@ module dcmac_0_prbs_mon_ts (
 );
 
   parameter COUNTER_MODE = 0;
+  parameter NUM_ID = 6;
+  localparam ID_W = (NUM_ID == 1) ? 1 : $clog2(NUM_ID);
 
   input        clk;
   input        rst;
-  input        [3-1:0] i_id;
+  input        [ID_W-1:0] i_id;
   input        [8-1:0] i_num_byte;
   input        [1536-1:0] i_dat;
   input        i_prbs_locked;
@@ -75,7 +77,7 @@ module dcmac_0_prbs_mon_ts (
 
   wire   [6:0][31:0][16-1:0] seed_group;
   reg    [1:1][6:0][16-1:0] seed_pipe;
-  reg    [4:1][3-1:0] id;
+  reg    [4:1][ID_W-1:0] id;
   reg    [2:1] shift;
   reg    [3:1][8-1:0] num_byte;
   reg    [3:1][1536-1:0] dat;

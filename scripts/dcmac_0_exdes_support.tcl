@@ -20,7 +20,7 @@ set script_folder [_tcl::get_script_folder]
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2024.2
+set scripts_vivado_version 2025.1
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
@@ -125,7 +125,7 @@ if { $bCheckIPs == 1 } {
 xilinx.com:ip:dcmac:*\
 xilinx.com:ip:util_ds_buf:*\
 xilinx.com:ip:gt_quad_base:*\
-xilinx.com:ip:xlconstant:*\
+xilinx.com:inline_hdl:ilconstant:*\
 xilinx.com:ip:bufg_gt:*\
 "
 
@@ -247,17 +247,6 @@ proc create_hier_cell_dcmac_0_gt_wrapper { parentCell nameHier } {
   create_bd_pin -dir I -from 0 -to 0 MBUFG_GT_CLRB_LEAF3
   create_bd_pin -dir O -from 0 -to 0 -type gt_usrclk ch0_tx_usr_clk_1
   create_bd_pin -dir O -from 0 -to 0 -type gt_usrclk ch0_tx_usr_clk2_1
-  create_bd_pin -dir I -type rst hsclk1_lcpllreset
-  create_bd_pin -dir O hsclk0_lcplllock
-  create_bd_pin -dir O gtpowergood_0
-  create_bd_pin -dir I -type rst ch0_iloreset
-  create_bd_pin -dir I -type rst ch1_iloreset
-  create_bd_pin -dir I -type rst ch2_iloreset
-  create_bd_pin -dir I -type rst ch3_iloreset
-  create_bd_pin -dir O ch0_iloresetdone
-  create_bd_pin -dir O ch1_iloresetdone
-  create_bd_pin -dir O ch2_iloresetdone
-  create_bd_pin -dir O ch3_iloresetdone
   create_bd_pin -dir I -from 5 -to 0 gt_txpostcursor
   create_bd_pin -dir I -from 5 -to 0 gt_txprecursor
   create_bd_pin -dir I -from 6 -to 0 gt_txmaincursor
@@ -277,18 +266,8 @@ proc create_hier_cell_dcmac_0_gt_wrapper { parentCell nameHier } {
   create_bd_pin -dir O -from 31 -to 0 gpo
   create_bd_pin -dir I -type clk apb3clk_quad
   create_bd_pin -dir I -type rst s_axi_aresetn
+  create_bd_pin -dir O gtpowergood_0
   create_bd_pin -dir O -type gt_usrclk IBUFDS_ODIV2
-  create_bd_pin -dir I -type rst hsclk0_rpllreset
-  create_bd_pin -dir O hsclk0_lcplllock1
-  create_bd_pin -dir O gtpowergood_1
-  create_bd_pin -dir I -type rst ch0_iloreset1
-  create_bd_pin -dir I -type rst ch1_iloreset1
-  create_bd_pin -dir I -type rst ch2_iloreset1
-  create_bd_pin -dir I -type rst ch3_iloreset1
-  create_bd_pin -dir O ch0_iloresetdone1
-  create_bd_pin -dir O ch1_iloresetdone1
-  create_bd_pin -dir O ch2_iloresetdone1
-  create_bd_pin -dir O ch3_iloresetdone1
   create_bd_pin -dir I -from 7 -to 0 ch0_txrate_1
   create_bd_pin -dir I -from 7 -to 0 ch1_txrate_1
   create_bd_pin -dir I -from 7 -to 0 ch2_txrate_1
@@ -301,6 +280,7 @@ proc create_hier_cell_dcmac_0_gt_wrapper { parentCell nameHier } {
   create_bd_pin -dir I -from 2 -to 0 ch1_loopback_1
   create_bd_pin -dir I -from 2 -to 0 ch2_loopback_1
   create_bd_pin -dir I -from 2 -to 0 ch3_loopback_1
+  create_bd_pin -dir O gtpowergood_1
 
   # Create instance: util_ds_buf_0, and set properties
   set util_ds_buf_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf util_ds_buf_0 ]
@@ -311,11 +291,11 @@ proc create_hier_cell_dcmac_0_gt_wrapper { parentCell nameHier } {
   set gt_quad_base [ create_bd_cell -type ip -vlnv xilinx.com:ip:gt_quad_base gt_quad_base ]
   set_property -dict [list \
     CONFIG.APB3_CLK_FREQUENCY {200.0} \
-    CONFIG.CHANNEL_ORDERING {/dcmac_0_core/gtm_tx_serdes_interface_0 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base/TX0_GT_IP_Interface.0 /dcmac_0_core/gtm_tx_serdes_interface_1 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base/TX1_GT_IP_Interface.1\
-/dcmac_0_core/gtm_tx_serdes_interface_2 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base/TX2_GT_IP_Interface.2 /dcmac_0_core/gtm_tx_serdes_interface_3 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base/TX3_GT_IP_Interface.3\
-/dcmac_0_core/gtm_rx_serdes_interface_0 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base/RX0_GT_IP_Interface.0 /dcmac_0_core/gtm_rx_serdes_interface_1 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base/RX1_GT_IP_Interface.1\
-/dcmac_0_core/gtm_rx_serdes_interface_2 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base/RX2_GT_IP_Interface.2 /dcmac_0_core/gtm_rx_serdes_interface_3 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base/RX3_GT_IP_Interface.3}\
-\
+    CONFIG.CHANNEL_ORDERING {/dcmac_0_gt_wrapper/gt_quad_base/TX0_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_tx_serdes_interface_0.0 /dcmac_0_gt_wrapper/gt_quad_base/TX1_GT_IP_Interface\
+dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_tx_serdes_interface_1.1 /dcmac_0_gt_wrapper/gt_quad_base/TX2_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_tx_serdes_interface_2.2\
+/dcmac_0_gt_wrapper/gt_quad_base/TX3_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_tx_serdes_interface_3.3 /dcmac_0_gt_wrapper/gt_quad_base/RX0_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_rx_serdes_interface_0.0\
+/dcmac_0_gt_wrapper/gt_quad_base/RX1_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_rx_serdes_interface_1.1 /dcmac_0_gt_wrapper/gt_quad_base/RX2_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_rx_serdes_interface_2.2\
+/dcmac_0_gt_wrapper/gt_quad_base/RX3_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_rx_serdes_interface_3.3} \
     CONFIG.GT_TYPE {GTM} \
     CONFIG.PORTS_INFO_DICT {LANE_SEL_DICT {PROT0 {RX0 RX1 RX2 RX3 TX0 TX1 TX2 TX3}} GT_TYPE GTM REG_CONF_INTF APB3_INTF BOARD_PARAMETER { }} \
     CONFIG.PROT0_ENABLE {true} \
@@ -358,10 +338,10 @@ DISABLE RX_BUFFER_RESET_ON_RATE_CHANGE ENABLE RESET_SEQUENCE_INTERVAL 0 RX_COMMA
     CONFIG.PROT0_NO_OF_LANES {4} \
     CONFIG.PROT0_RX_MASTERCLK_SRC {RX0} \
     CONFIG.PROT0_TX_MASTERCLK_SRC {TX0} \
-    CONFIG.QUAD_USAGE {TX_QUAD_CH {TXQuad_0_/gt_quad_base {/gt_quad_base dcmac_0_exdes_support_dcmac_0_core_0.IP_CH0,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH1,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH2,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH3\
-MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1} TXQuad_1_/gt_quad_base_1 {/gt_quad_base_1 dcmac_0_exdes_support_dcmac_0_core_0.IP_CH4,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH5,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH6,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH7\
-MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 0}} RX_QUAD_CH {RXQuad_0_/gt_quad_base {/gt_quad_base dcmac_0_exdes_support_dcmac_0_core_0.IP_CH0,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH1,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH2,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH3\
-MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1} RXQuad_1_/gt_quad_base_1 {/gt_quad_base_1 dcmac_0_exdes_support_dcmac_0_core_0.IP_CH4,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH5,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH6,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH7\
+    CONFIG.QUAD_USAGE {TX_QUAD_CH {TXQuad_0_/dcmac_0_gt_wrapper/gt_quad_base {/dcmac_0_gt_wrapper/gt_quad_base dcmac_0_exdes_support_dcmac_0_core_0.IP_CH0,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH1,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH2,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH3\
+MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1} TXQuad_1_/dcmac_0_gt_wrapper/gt_quad_base_1 {/dcmac_0_gt_wrapper/gt_quad_base_1 dcmac_0_exdes_support_dcmac_0_core_0.IP_CH4,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH5,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH6,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH7\
+MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 0}} RX_QUAD_CH {RXQuad_0_/dcmac_0_gt_wrapper/gt_quad_base {/dcmac_0_gt_wrapper/gt_quad_base dcmac_0_exdes_support_dcmac_0_core_0.IP_CH0,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH1,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH2,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH3\
+MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1} RXQuad_1_/dcmac_0_gt_wrapper/gt_quad_base_1 {/dcmac_0_gt_wrapper/gt_quad_base_1 dcmac_0_exdes_support_dcmac_0_core_0.IP_CH4,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH5,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH6,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH7\
 MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 0}}} \
     CONFIG.REFCLK_LIST {{/CLK_IN_D_0_clk_p[0]}} \
     CONFIG.REFCLK_STRING {HSCLK0_LCPLLGTREFCLK0 refclk_PROT0_R0_322.265625_MHz_unique1} \
@@ -375,88 +355,50 @@ MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 0}}} \
     CONFIG.TX3_LANE_SEL {PROT0} \
   ] $gt_quad_base
 
-  # Need to retain value_src of defaults
-  # Enable this script to override value_src settings
-  set_param bd.wbt.allow_value_src true
-  set_property -dict [list \
-    CONFIG.CHANNEL_ORDERING.VALUE_SRC {default} \
-    CONFIG.GT_TYPE.VALUE_SRC {default} \
-    CONFIG.PROT0_ENABLE.VALUE_SRC {default} \
-    CONFIG.PROT0_GT_DIRECTION.VALUE_SRC {default} \
-    CONFIG.PROT0_LR0_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR10_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR11_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR12_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR13_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR14_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR15_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR1_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR2_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR3_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR4_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR5_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR6_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR7_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR8_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR9_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_NO_OF_LANES.VALUE_SRC {default} \
-    CONFIG.PROT0_RX_MASTERCLK_SRC.VALUE_SRC {default} \
-    CONFIG.PROT0_TX_MASTERCLK_SRC.VALUE_SRC {default} \
-    CONFIG.QUAD_USAGE.VALUE_SRC {default} \
-    CONFIG.RX0_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.RX1_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.RX2_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.RX3_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.TX0_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.TX1_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.TX2_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.TX3_LANE_SEL.VALUE_SRC {default} \
-  ] $gt_quad_base
-
   set_property -dict [list \
     CONFIG.APB3_CLK_FREQUENCY.VALUE_MODE {auto} \
-    CONFIG.CHANNEL_ORDERING.VALUE_MODE {manual} \
-    CONFIG.GT_TYPE.VALUE_MODE {manual} \
-    CONFIG.PROT0_ENABLE.VALUE_MODE {manual} \
-    CONFIG.PROT0_GT_DIRECTION.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR0_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR10_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR11_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR12_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR13_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR14_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR15_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR1_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR2_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR3_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR4_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR5_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR6_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR7_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR8_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR9_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_NO_OF_LANES.VALUE_MODE {manual} \
-    CONFIG.PROT0_RX_MASTERCLK_SRC.VALUE_MODE {manual} \
-    CONFIG.PROT0_TX_MASTERCLK_SRC.VALUE_MODE {manual} \
-    CONFIG.QUAD_USAGE.VALUE_MODE {manual} \
+    CONFIG.CHANNEL_ORDERING.VALUE_MODE {auto} \
+    CONFIG.GT_TYPE.VALUE_MODE {auto} \
+    CONFIG.PROT0_ENABLE.VALUE_MODE {auto} \
+    CONFIG.PROT0_GT_DIRECTION.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR0_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR10_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR11_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR12_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR13_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR14_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR15_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR1_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR2_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR3_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR4_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR5_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR6_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR7_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR8_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR9_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_NO_OF_LANES.VALUE_MODE {auto} \
+    CONFIG.PROT0_RX_MASTERCLK_SRC.VALUE_MODE {auto} \
+    CONFIG.PROT0_TX_MASTERCLK_SRC.VALUE_MODE {auto} \
+    CONFIG.QUAD_USAGE.VALUE_MODE {auto} \
     CONFIG.REFCLK_LIST.VALUE_MODE {auto} \
-    CONFIG.RX0_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.RX1_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.RX2_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.RX3_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.TX0_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.TX1_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.TX2_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.TX3_LANE_SEL.VALUE_MODE {manual} \
+    CONFIG.RX0_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.RX1_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.RX2_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.RX3_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.TX0_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.TX1_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.TX2_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.TX3_LANE_SEL.VALUE_MODE {auto} \
   ] $gt_quad_base
 
 
-  # Create instance: xlconstant_0, and set properties
-  set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant xlconstant_0 ]
+  # Create instance: ilconstant_0, and set properties
+  set ilconstant_0 [ create_bd_cell -type inline_hdl -vlnv xilinx.com:inline_hdl:ilconstant ilconstant_0 ]
   set_property -dict [list \
     CONFIG.CONST_VAL {1} \
     CONFIG.CONST_WIDTH {1} \
-  ] $xlconstant_0
+  ] $ilconstant_0
 
 
   # Create instance: bufg_gt_odiv2, and set properties
@@ -498,11 +440,11 @@ MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 0}}} \
   set gt_quad_base_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:gt_quad_base gt_quad_base_1 ]
   set_property -dict [list \
     CONFIG.APB3_CLK_FREQUENCY {200.0} \
-    CONFIG.CHANNEL_ORDERING {/dcmac_0_core/gtm_tx_serdes_interface_4 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base_1/TX0_GT_IP_Interface.4 /dcmac_0_core/gtm_tx_serdes_interface_5 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base_1/TX1_GT_IP_Interface.5\
-/dcmac_0_core/gtm_tx_serdes_interface_6 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base_1/TX2_GT_IP_Interface.6 /dcmac_0_core/gtm_tx_serdes_interface_7 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base_1/TX3_GT_IP_Interface.7\
-/dcmac_0_core/gtm_rx_serdes_interface_4 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base_1/RX0_GT_IP_Interface.4 /dcmac_0_core/gtm_rx_serdes_interface_5 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base_1/RX1_GT_IP_Interface.5\
-/dcmac_0_core/gtm_rx_serdes_interface_6 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base_1/RX2_GT_IP_Interface.6 /dcmac_0_core/gtm_rx_serdes_interface_7 dcmac_0_exdes_support_dcmac_0_core_0./gt_quad_base_1/RX3_GT_IP_Interface.7}\
-\
+    CONFIG.CHANNEL_ORDERING {/dcmac_0_gt_wrapper/gt_quad_base_1/TX0_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_tx_serdes_interface_4.4 /dcmac_0_gt_wrapper/gt_quad_base_1/TX1_GT_IP_Interface\
+dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_tx_serdes_interface_5.5 /dcmac_0_gt_wrapper/gt_quad_base_1/TX2_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_tx_serdes_interface_6.6\
+/dcmac_0_gt_wrapper/gt_quad_base_1/TX3_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_tx_serdes_interface_7.7 /dcmac_0_gt_wrapper/gt_quad_base_1/RX0_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_rx_serdes_interface_4.4\
+/dcmac_0_gt_wrapper/gt_quad_base_1/RX1_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_rx_serdes_interface_5.5 /dcmac_0_gt_wrapper/gt_quad_base_1/RX2_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_rx_serdes_interface_6.6\
+/dcmac_0_gt_wrapper/gt_quad_base_1/RX3_GT_IP_Interface dcmac_0_exdes_support_dcmac_0_core_0./dcmac_0_core/gtm_rx_serdes_interface_7.7} \
     CONFIG.GT_TYPE {GTM} \
     CONFIG.PORTS_INFO_DICT {LANE_SEL_DICT {PROT0 {RX0 RX1 RX2 RX3 TX0 TX1 TX2 TX3}} GT_TYPE GTM REG_CONF_INTF APB3_INTF BOARD_PARAMETER { }} \
     CONFIG.PROT0_ENABLE {true} \
@@ -545,10 +487,10 @@ DISABLE RX_BUFFER_RESET_ON_RATE_CHANGE ENABLE RESET_SEQUENCE_INTERVAL 0 RX_COMMA
     CONFIG.PROT0_NO_OF_LANES {4} \
     CONFIG.PROT0_RX_MASTERCLK_SRC {RX0} \
     CONFIG.PROT0_TX_MASTERCLK_SRC {TX0} \
-    CONFIG.QUAD_USAGE {TX_QUAD_CH {TXQuad_-1_/gt_quad_base {/gt_quad_base dcmac_0_exdes_support_dcmac_0_core_0.IP_CH0,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH1,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH2,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH3\
-MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 0} TXQuad_0_/gt_quad_base_1 {/gt_quad_base_1 dcmac_0_exdes_support_dcmac_0_core_0.IP_CH4,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH5,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH6,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH7\
-MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1}} RX_QUAD_CH {RXQuad_-1_/gt_quad_base {/gt_quad_base dcmac_0_exdes_support_dcmac_0_core_0.IP_CH0,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH1,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH2,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH3\
-MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 0} RXQuad_0_/gt_quad_base_1 {/gt_quad_base_1 dcmac_0_exdes_support_dcmac_0_core_0.IP_CH4,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH5,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH6,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH7\
+    CONFIG.QUAD_USAGE {TX_QUAD_CH {TXQuad_-1_/dcmac_0_gt_wrapper/gt_quad_base {/dcmac_0_gt_wrapper/gt_quad_base dcmac_0_exdes_support_dcmac_0_core_0.IP_CH0,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH1,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH2,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH3\
+MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 0} TXQuad_0_/dcmac_0_gt_wrapper/gt_quad_base_1 {/dcmac_0_gt_wrapper/gt_quad_base_1 dcmac_0_exdes_support_dcmac_0_core_0.IP_CH4,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH5,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH6,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH7\
+MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1}} RX_QUAD_CH {RXQuad_-1_/dcmac_0_gt_wrapper/gt_quad_base {/dcmac_0_gt_wrapper/gt_quad_base dcmac_0_exdes_support_dcmac_0_core_0.IP_CH0,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH1,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH2,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH3\
+MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 0} RXQuad_0_/dcmac_0_gt_wrapper/gt_quad_base_1 {/dcmac_0_gt_wrapper/gt_quad_base_1 dcmac_0_exdes_support_dcmac_0_core_0.IP_CH4,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH5,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH6,dcmac_0_exdes_support_dcmac_0_core_0.IP_CH7\
 MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1}}} \
     CONFIG.REFCLK_LIST {{/CLK_IN_D_0_clk_p[0]}} \
     CONFIG.REFCLK_STRING {HSCLK0_LCPLLGTREFCLK0 refclk_PROT0_R0_322.265625_MHz_unique1} \
@@ -562,79 +504,41 @@ MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1}}} \
     CONFIG.TX3_LANE_SEL {PROT0} \
   ] $gt_quad_base_1
 
-  # Need to retain value_src of defaults
-  # Enable this script to override value_src settings
-  set_param bd.wbt.allow_value_src true
-  set_property -dict [list \
-    CONFIG.CHANNEL_ORDERING.VALUE_SRC {default} \
-    CONFIG.GT_TYPE.VALUE_SRC {default} \
-    CONFIG.PROT0_ENABLE.VALUE_SRC {default} \
-    CONFIG.PROT0_GT_DIRECTION.VALUE_SRC {default} \
-    CONFIG.PROT0_LR0_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR10_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR11_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR12_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR13_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR14_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR15_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR1_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR2_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR3_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR4_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR5_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR6_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR7_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR8_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_LR9_SETTINGS.VALUE_SRC {default} \
-    CONFIG.PROT0_NO_OF_LANES.VALUE_SRC {default} \
-    CONFIG.PROT0_RX_MASTERCLK_SRC.VALUE_SRC {default} \
-    CONFIG.PROT0_TX_MASTERCLK_SRC.VALUE_SRC {default} \
-    CONFIG.QUAD_USAGE.VALUE_SRC {default} \
-    CONFIG.RX0_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.RX1_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.RX2_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.RX3_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.TX0_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.TX1_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.TX2_LANE_SEL.VALUE_SRC {default} \
-    CONFIG.TX3_LANE_SEL.VALUE_SRC {default} \
-  ] $gt_quad_base_1
-
   set_property -dict [list \
     CONFIG.APB3_CLK_FREQUENCY.VALUE_MODE {auto} \
-    CONFIG.CHANNEL_ORDERING.VALUE_MODE {manual} \
-    CONFIG.GT_TYPE.VALUE_MODE {manual} \
-    CONFIG.PROT0_ENABLE.VALUE_MODE {manual} \
-    CONFIG.PROT0_GT_DIRECTION.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR0_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR10_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR11_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR12_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR13_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR14_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR15_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR1_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR2_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR3_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR4_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR5_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR6_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR7_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR8_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_LR9_SETTINGS.VALUE_MODE {manual} \
-    CONFIG.PROT0_NO_OF_LANES.VALUE_MODE {manual} \
-    CONFIG.PROT0_RX_MASTERCLK_SRC.VALUE_MODE {manual} \
-    CONFIG.PROT0_TX_MASTERCLK_SRC.VALUE_MODE {manual} \
-    CONFIG.QUAD_USAGE.VALUE_MODE {manual} \
+    CONFIG.CHANNEL_ORDERING.VALUE_MODE {auto} \
+    CONFIG.GT_TYPE.VALUE_MODE {auto} \
+    CONFIG.PROT0_ENABLE.VALUE_MODE {auto} \
+    CONFIG.PROT0_GT_DIRECTION.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR0_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR10_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR11_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR12_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR13_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR14_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR15_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR1_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR2_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR3_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR4_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR5_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR6_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR7_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR8_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_LR9_SETTINGS.VALUE_MODE {auto} \
+    CONFIG.PROT0_NO_OF_LANES.VALUE_MODE {auto} \
+    CONFIG.PROT0_RX_MASTERCLK_SRC.VALUE_MODE {auto} \
+    CONFIG.PROT0_TX_MASTERCLK_SRC.VALUE_MODE {auto} \
+    CONFIG.QUAD_USAGE.VALUE_MODE {auto} \
     CONFIG.REFCLK_LIST.VALUE_MODE {auto} \
-    CONFIG.RX0_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.RX1_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.RX2_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.RX3_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.TX0_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.TX1_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.TX2_LANE_SEL.VALUE_MODE {manual} \
-    CONFIG.TX3_LANE_SEL.VALUE_MODE {manual} \
+    CONFIG.RX0_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.RX1_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.RX2_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.RX3_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.TX0_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.TX1_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.TX2_LANE_SEL.VALUE_MODE {auto} \
+    CONFIG.TX3_LANE_SEL.VALUE_MODE {auto} \
   ] $gt_quad_base_1
 
 
@@ -714,32 +618,6 @@ MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1}}} \
   [get_bd_pins gt_quad_base/ch3_txrate]
   connect_bd_net -net ch3_txrate_1_1  [get_bd_pins ch3_txrate_1] \
   [get_bd_pins gt_quad_base_1/ch3_txrate]
-  connect_bd_net -net dcmac_0_core_iloreset_out_0  [get_bd_pins ch0_iloreset] \
-  [get_bd_pins gt_quad_base/ch0_iloreset]
-  connect_bd_net -net dcmac_0_core_iloreset_out_1  [get_bd_pins ch1_iloreset] \
-  [get_bd_pins gt_quad_base/ch1_iloreset]
-  connect_bd_net -net dcmac_0_core_iloreset_out_2  [get_bd_pins ch2_iloreset] \
-  [get_bd_pins gt_quad_base/ch2_iloreset]
-  connect_bd_net -net dcmac_0_core_iloreset_out_3  [get_bd_pins ch3_iloreset] \
-  [get_bd_pins gt_quad_base/ch3_iloreset]
-  connect_bd_net -net dcmac_0_core_iloreset_out_4  [get_bd_pins ch0_iloreset1] \
-  [get_bd_pins gt_quad_base_1/ch0_iloreset]
-  connect_bd_net -net dcmac_0_core_iloreset_out_5  [get_bd_pins ch1_iloreset1] \
-  [get_bd_pins gt_quad_base_1/ch1_iloreset]
-  connect_bd_net -net dcmac_0_core_iloreset_out_6  [get_bd_pins ch2_iloreset1] \
-  [get_bd_pins gt_quad_base_1/ch2_iloreset]
-  connect_bd_net -net dcmac_0_core_iloreset_out_7  [get_bd_pins ch3_iloreset1] \
-  [get_bd_pins gt_quad_base_1/ch3_iloreset]
-  connect_bd_net -net dcmac_0_core_pllreset_out_0  [get_bd_pins hsclk1_lcpllreset] \
-  [get_bd_pins gt_quad_base/hsclk1_lcpllreset] \
-  [get_bd_pins gt_quad_base/hsclk0_rpllreset] \
-  [get_bd_pins gt_quad_base/hsclk1_rpllreset] \
-  [get_bd_pins gt_quad_base/hsclk0_lcpllreset]
-  connect_bd_net -net dcmac_0_core_pllreset_out_1  [get_bd_pins hsclk0_rpllreset] \
-  [get_bd_pins gt_quad_base_1/hsclk0_rpllreset] \
-  [get_bd_pins gt_quad_base_1/hsclk1_lcpllreset] \
-  [get_bd_pins gt_quad_base_1/hsclk1_rpllreset] \
-  [get_bd_pins gt_quad_base_1/hsclk0_lcpllreset]
   connect_bd_net -net dcmac_0_core_rx_clr_out_0  [get_bd_pins MBUFG_GT_CLR] \
   [get_bd_pins util_ds_buf_mbufg_rx_0/MBUFG_GT_CLR]
   connect_bd_net -net dcmac_0_core_rx_clr_out_4  [get_bd_pins MBUFG_GT_CLR1] \
@@ -756,40 +634,20 @@ MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1}}} \
   [get_bd_pins util_ds_buf_mbufg_tx_0/MBUFG_GT_CLRB_LEAF]
   connect_bd_net -net dcmac_0_core_tx_clrb_leaf_out_4  [get_bd_pins MBUFG_GT_CLRB_LEAF3] \
   [get_bd_pins util_ds_buf_mbufg_tx_1/MBUFG_GT_CLRB_LEAF]
-  connect_bd_net -net gt_quad_base_1_ch0_iloresetdone  [get_bd_pins gt_quad_base_1/ch0_iloresetdone] \
-  [get_bd_pins ch0_iloresetdone1]
   connect_bd_net -net gt_quad_base_1_ch0_rxoutclk  [get_bd_pins gt_quad_base_1/ch0_rxoutclk] \
   [get_bd_pins util_ds_buf_mbufg_rx_1/MBUFG_GT_I]
   connect_bd_net -net gt_quad_base_1_ch0_txoutclk  [get_bd_pins gt_quad_base_1/ch0_txoutclk] \
   [get_bd_pins util_ds_buf_mbufg_tx_1/MBUFG_GT_I]
-  connect_bd_net -net gt_quad_base_1_ch1_iloresetdone  [get_bd_pins gt_quad_base_1/ch1_iloresetdone] \
-  [get_bd_pins ch1_iloresetdone1]
-  connect_bd_net -net gt_quad_base_1_ch2_iloresetdone  [get_bd_pins gt_quad_base_1/ch2_iloresetdone] \
-  [get_bd_pins ch2_iloresetdone1]
-  connect_bd_net -net gt_quad_base_1_ch3_iloresetdone  [get_bd_pins gt_quad_base_1/ch3_iloresetdone] \
-  [get_bd_pins ch3_iloresetdone1]
   connect_bd_net -net gt_quad_base_1_gtpowergood  [get_bd_pins gt_quad_base_1/gtpowergood] \
   [get_bd_pins gtpowergood_1]
-  connect_bd_net -net gt_quad_base_1_hsclk0_lcplllock  [get_bd_pins gt_quad_base_1/hsclk0_lcplllock] \
-  [get_bd_pins hsclk0_lcplllock1]
-  connect_bd_net -net gt_quad_base_ch0_iloresetdone  [get_bd_pins gt_quad_base/ch0_iloresetdone] \
-  [get_bd_pins ch0_iloresetdone]
   connect_bd_net -net gt_quad_base_ch0_rxoutclk  [get_bd_pins gt_quad_base/ch0_rxoutclk] \
   [get_bd_pins util_ds_buf_mbufg_rx_0/MBUFG_GT_I]
   connect_bd_net -net gt_quad_base_ch0_txoutclk  [get_bd_pins gt_quad_base/ch0_txoutclk] \
   [get_bd_pins util_ds_buf_mbufg_tx_0/MBUFG_GT_I]
-  connect_bd_net -net gt_quad_base_ch1_iloresetdone  [get_bd_pins gt_quad_base/ch1_iloresetdone] \
-  [get_bd_pins ch1_iloresetdone]
-  connect_bd_net -net gt_quad_base_ch2_iloresetdone  [get_bd_pins gt_quad_base/ch2_iloresetdone] \
-  [get_bd_pins ch2_iloresetdone]
-  connect_bd_net -net gt_quad_base_ch3_iloresetdone  [get_bd_pins gt_quad_base/ch3_iloresetdone] \
-  [get_bd_pins ch3_iloresetdone]
   connect_bd_net -net gt_quad_base_gpo  [get_bd_pins gt_quad_base/gpo] \
   [get_bd_pins gpo]
   connect_bd_net -net gt_quad_base_gtpowergood  [get_bd_pins gt_quad_base/gtpowergood] \
   [get_bd_pins gtpowergood_0]
-  connect_bd_net -net gt_quad_base_hsclk0_lcplllock  [get_bd_pins gt_quad_base/hsclk0_lcplllock] \
-  [get_bd_pins hsclk0_lcplllock]
   connect_bd_net -net gt_rxcdrhold_1  [get_bd_pins gt_rxcdrhold] \
   [get_bd_pins gt_quad_base/ch1_rxcdrhold] \
   [get_bd_pins gt_quad_base/ch2_rxcdrhold] \
@@ -826,6 +684,11 @@ MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1}}} \
   [get_bd_pins gt_quad_base_1/ch2_txprecursor] \
   [get_bd_pins gt_quad_base_1/ch3_txprecursor] \
   [get_bd_pins gt_quad_base/ch0_txprecursor]
+  connect_bd_net -net ilconstant_0_dout  [get_bd_pins ilconstant_0/dout] \
+  [get_bd_pins util_ds_buf_mbufg_tx_0/MBUFG_GT_CE] \
+  [get_bd_pins util_ds_buf_mbufg_rx_0/MBUFG_GT_CE] \
+  [get_bd_pins util_ds_buf_mbufg_tx_1/MBUFG_GT_CE] \
+  [get_bd_pins util_ds_buf_mbufg_rx_1/MBUFG_GT_CE]
   connect_bd_net -net s_axi_aresetn_1  [get_bd_pins s_axi_aresetn] \
   [get_bd_pins gt_quad_base_1/apb3presetn] \
   [get_bd_pins gt_quad_base/apb3presetn]
@@ -866,11 +729,6 @@ MSTRCLK 1,0,0,0 IS_CURRENT_QUAD 1}}} \
   [get_bd_pins gt_quad_base_1/ch1_txusrclk] \
   [get_bd_pins gt_quad_base_1/ch2_txusrclk] \
   [get_bd_pins gt_quad_base_1/ch3_txusrclk]
-  connect_bd_net -net xlconstant_0_dout  [get_bd_pins xlconstant_0/dout] \
-  [get_bd_pins util_ds_buf_mbufg_tx_0/MBUFG_GT_CE] \
-  [get_bd_pins util_ds_buf_mbufg_rx_0/MBUFG_GT_CE] \
-  [get_bd_pins util_ds_buf_mbufg_tx_1/MBUFG_GT_CE] \
-  [get_bd_pins util_ds_buf_mbufg_rx_1/MBUFG_GT_CE]
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1079,7 +937,7 @@ proc create_root_design { parentCell } {
   set tx_axis_tvalid_1 [ create_bd_port -dir I tx_axis_tvalid_1 ]
   set tx_preamblein_0 [ create_bd_port -dir I -from 55 -to 0 tx_preamblein_0 ]
   set tx_preamblein_1 [ create_bd_port -dir I -from 55 -to 0 tx_preamblein_1 ]
-  set gt_reset_all_in [ create_bd_port -dir I gt_reset_all_in ]
+  set gt_reset_all_in [ create_bd_port -dir I -from 5 -to 0 gt_reset_all_in ]
   set gtpowergood_in [ create_bd_port -dir I gtpowergood_in ]
   set rx_axis_tdata0 [ create_bd_port -dir O -from 127 -to 0 rx_axis_tdata0 ]
   set rx_axis_tdata1 [ create_bd_port -dir O -from 127 -to 0 rx_axis_tdata1 ]
@@ -1297,6 +1155,7 @@ proc create_root_design { parentCell } {
     CONFIG.DCMAC_DATA_PATH_INTERFACE_C0 {195MHz Upto 3x100G Ports} \
     CONFIG.DCMAC_LOCATION_C0 {DCMAC_X1Y1} \
     CONFIG.DCMAC_MODE_C0 {Coupled MAC+PCS} \
+    CONFIG.ENABLE_ALL_PORTS {0} \
     CONFIG.FAST_SIM_MODE {0} \
     CONFIG.FEC_SLICE0_CFG_C0 {FEC Disabled} \
     CONFIG.FEC_SLICE1_CFG_C0 {FEC Disabled} \
@@ -1333,6 +1192,7 @@ proc create_root_design { parentCell } {
     CONFIG.PORT5_1588v2_Clocking_C0 {Ordinary/Boundary Clock} \
     CONFIG.PORT5_1588v2_Operation_MODE_C0 {No operation} \
     CONFIG.TIMESTAMP_CLK_PERIOD_NS {4.0000} \
+    CONFIG.USE_AXIS_ALMOSTFULL_INDICATION {0} \
   ] $dcmac_0_core
 
 
@@ -1515,26 +1375,6 @@ proc create_root_design { parentCell } {
   [get_bd_ports gt_tx_reset_done_out_6]
   connect_bd_net -net dcmac_0_core_gt_tx_reset_done_out_7  [get_bd_pins dcmac_0_core/gt_tx_reset_done_out_7] \
   [get_bd_ports gt_tx_reset_done_out_7]
-  connect_bd_net -net dcmac_0_core_iloreset_out_0  [get_bd_pins dcmac_0_core/iloreset_out_0] \
-  [get_bd_pins dcmac_0_gt_wrapper/ch0_iloreset]
-  connect_bd_net -net dcmac_0_core_iloreset_out_1  [get_bd_pins dcmac_0_core/iloreset_out_1] \
-  [get_bd_pins dcmac_0_gt_wrapper/ch1_iloreset]
-  connect_bd_net -net dcmac_0_core_iloreset_out_2  [get_bd_pins dcmac_0_core/iloreset_out_2] \
-  [get_bd_pins dcmac_0_gt_wrapper/ch2_iloreset]
-  connect_bd_net -net dcmac_0_core_iloreset_out_3  [get_bd_pins dcmac_0_core/iloreset_out_3] \
-  [get_bd_pins dcmac_0_gt_wrapper/ch3_iloreset]
-  connect_bd_net -net dcmac_0_core_iloreset_out_4  [get_bd_pins dcmac_0_core/iloreset_out_4] \
-  [get_bd_pins dcmac_0_gt_wrapper/ch0_iloreset1]
-  connect_bd_net -net dcmac_0_core_iloreset_out_5  [get_bd_pins dcmac_0_core/iloreset_out_5] \
-  [get_bd_pins dcmac_0_gt_wrapper/ch1_iloreset1]
-  connect_bd_net -net dcmac_0_core_iloreset_out_6  [get_bd_pins dcmac_0_core/iloreset_out_6] \
-  [get_bd_pins dcmac_0_gt_wrapper/ch2_iloreset1]
-  connect_bd_net -net dcmac_0_core_iloreset_out_7  [get_bd_pins dcmac_0_core/iloreset_out_7] \
-  [get_bd_pins dcmac_0_gt_wrapper/ch3_iloreset1]
-  connect_bd_net -net dcmac_0_core_pllreset_out_0  [get_bd_pins dcmac_0_core/pllreset_out_0] \
-  [get_bd_pins dcmac_0_gt_wrapper/hsclk1_lcpllreset]
-  connect_bd_net -net dcmac_0_core_pllreset_out_1  [get_bd_pins dcmac_0_core/pllreset_out_1] \
-  [get_bd_pins dcmac_0_gt_wrapper/hsclk0_rpllreset]
   connect_bd_net -net dcmac_0_core_rx_axis_tdata0  [get_bd_pins dcmac_0_core/rx_axis_tdata0] \
   [get_bd_ports rx_axis_tdata0]
   connect_bd_net -net dcmac_0_core_rx_axis_tdata1  [get_bd_pins dcmac_0_core/rx_axis_tdata1] \
@@ -1795,32 +1635,12 @@ proc create_root_design { parentCell } {
   [get_bd_ports tx_tsmac_tdm_stats_id]
   connect_bd_net -net dcmac_0_core_tx_tsmac_tdm_stats_valid  [get_bd_pins dcmac_0_core/tx_tsmac_tdm_stats_valid] \
   [get_bd_ports tx_tsmac_tdm_stats_valid]
-  connect_bd_net -net gt_quad_base_1_ch0_iloresetdone  [get_bd_pins dcmac_0_gt_wrapper/ch0_iloresetdone1] \
-  [get_bd_pins dcmac_0_core/ilo_reset_done_4]
-  connect_bd_net -net gt_quad_base_1_ch1_iloresetdone  [get_bd_pins dcmac_0_gt_wrapper/ch1_iloresetdone1] \
-  [get_bd_pins dcmac_0_core/ilo_reset_done_5]
-  connect_bd_net -net gt_quad_base_1_ch2_iloresetdone  [get_bd_pins dcmac_0_gt_wrapper/ch2_iloresetdone1] \
-  [get_bd_pins dcmac_0_core/ilo_reset_done_6]
-  connect_bd_net -net gt_quad_base_1_ch3_iloresetdone  [get_bd_pins dcmac_0_gt_wrapper/ch3_iloresetdone1] \
-  [get_bd_pins dcmac_0_core/ilo_reset_done_7]
   connect_bd_net -net gt_quad_base_1_gtpowergood  [get_bd_pins dcmac_0_gt_wrapper/gtpowergood_1] \
   [get_bd_ports gtpowergood_1]
-  connect_bd_net -net gt_quad_base_1_hsclk0_lcplllock  [get_bd_pins dcmac_0_gt_wrapper/hsclk0_lcplllock1] \
-  [get_bd_pins dcmac_0_core/plllock_in_1]
-  connect_bd_net -net gt_quad_base_ch0_iloresetdone  [get_bd_pins dcmac_0_gt_wrapper/ch0_iloresetdone] \
-  [get_bd_pins dcmac_0_core/ilo_reset_done_0]
-  connect_bd_net -net gt_quad_base_ch1_iloresetdone  [get_bd_pins dcmac_0_gt_wrapper/ch1_iloresetdone] \
-  [get_bd_pins dcmac_0_core/ilo_reset_done_1]
-  connect_bd_net -net gt_quad_base_ch2_iloresetdone  [get_bd_pins dcmac_0_gt_wrapper/ch2_iloresetdone] \
-  [get_bd_pins dcmac_0_core/ilo_reset_done_2]
-  connect_bd_net -net gt_quad_base_ch3_iloresetdone  [get_bd_pins dcmac_0_gt_wrapper/ch3_iloresetdone] \
-  [get_bd_pins dcmac_0_core/ilo_reset_done_3]
   connect_bd_net -net gt_quad_base_gpo  [get_bd_pins dcmac_0_gt_wrapper/gpo] \
   [get_bd_ports gpo]
   connect_bd_net -net gt_quad_base_gtpowergood  [get_bd_pins dcmac_0_gt_wrapper/gtpowergood_0] \
   [get_bd_ports gtpowergood_0]
-  connect_bd_net -net gt_quad_base_hsclk0_lcplllock  [get_bd_pins dcmac_0_gt_wrapper/hsclk0_lcplllock] \
-  [get_bd_pins dcmac_0_core/plllock_in_0]
   connect_bd_net -net gt_reset_all_in_1  [get_bd_ports gt_reset_all_in] \
   [get_bd_pins dcmac_0_core/gt_reset_all_in]
   connect_bd_net -net gt_reset_rx_datapath_in_0_1  [get_bd_ports gt_reset_rx_datapath_in_0] \
@@ -2054,7 +1874,7 @@ proc create_root_design { parentCell } {
   [get_bd_ports ch0_tx_usr_clk2_1]
 
   # Create address segments
-  assign_bd_address -offset 0xA4000000 -range 0x00100000 -target_address_space [get_bd_addr_spaces s_axi] [get_bd_addr_segs dcmac_0_core/s_axi/Reg] -force
+  assign_bd_address -offset 0xA4000000 -range 0x00040000 -target_address_space [get_bd_addr_spaces s_axi] [get_bd_addr_segs dcmac_0_core/s_axi/Reg] -force
 
 
   # Restore current instance

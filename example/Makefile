@@ -27,7 +27,7 @@ proj: ${DCMAC_EX_PRJ}
 
 clean:
 	@rm -rf vivado*
-cleanall:
+cleanall: clean
 	@rm -rf proj_dcmac
 	@rm -rf dcmac_0_ex
 	@rm -rf ./output

@@ -58,9 +58,11 @@ module dcmac_0_axis_pkt_gen_mty_shift (
   o_pkt
 );
   parameter REGISTER_INPUT = 1;
+  parameter NUM_ID = 6;
+  localparam ID_W = (NUM_ID == 1) ? 1 : $clog2(NUM_ID);
 
   typedef struct packed {
-    logic [2:0]          id;
+    logic [ID_W-1:0]     id;
     logic [11:0]         ena;
     logic [11:0][15:0]   pkt_len;
     logic [11:0]         sop;
@@ -72,7 +74,7 @@ module dcmac_0_axis_pkt_gen_mty_shift (
   } lbus_pkt_ctrl_t;
 
   typedef struct packed {
-    logic [2:0]               id;
+    logic [ID_W-1:0]     id;
     logic [11:0]         ena;
     logic [11:0]         sop;
     logic [11:0]         eop;

@@ -121,10 +121,6 @@ integer gt_loopback2_p_0;
 integer gt_loopback2_n_0;
 integer gt_loopback3_p_0;
 integer gt_loopback3_n_0;
-integer gt_loopback4_p_0;
-integer gt_loopback4_n_0;
-integer gt_loopback5_p_0;
-integer gt_loopback5_n_0;
 integer gt_loopback0_p_1;
 integer gt_loopback0_n_1;
 integer gt_loopback1_p_1;
@@ -133,15 +129,11 @@ integer gt_loopback2_p_1;
 integer gt_loopback2_n_1;
 integer gt_loopback3_p_1;
 integer gt_loopback3_n_1;
-integer gt_loopback4_p_1;
-integer gt_loopback4_n_1;
-integer gt_loopback5_p_1;
-integer gt_loopback5_n_1;
 reg               pl_clk;
    
 reg               gt_ref_clk_p;
 reg               gt_ref_clk_n;
-reg               gt_reset_all_in;
+reg   [5:0]       gt_reset_all_in;
 wire  [31:0]      gt_gpo;
 wire              gt_reset_done;
 
@@ -209,8 +201,8 @@ int               overall_fail;
 /// Serdes resets and Core resets
   assign rx_core_reset     = gt_rx_reset_core;
   assign tx_core_reset     = gt_tx_reset_core;
-  assign rx_serdes_reset   = {1'b1,1'b1,~gt_rx_reset_done_out[4],~gt_rx_reset_done_out[4],~gt_rx_reset_done_out[0],~gt_rx_reset_done_out[0]};
-  assign tx_serdes_reset   = {1'b1,1'b1,~gt_tx_reset_done_out[4],~gt_tx_reset_done_out[4],~gt_tx_reset_done_out[0],~gt_tx_reset_done_out[0]};
+  assign rx_serdes_reset   = {1'b1,1'b1,1'b1,1'b1,~gt_rx_reset_done_out[4],~gt_rx_reset_done_out[0]};
+  assign tx_serdes_reset   = {1'b1,1'b1,1'b1,1'b1,~gt_tx_reset_done_out[4],~gt_tx_reset_done_out[0]}; 
 
 // DCMAC core counters
 logic [5:0][31:0] core_frames_tx, core_bytes_tx, core_frames_rx, core_bytes_rx;
@@ -245,12 +237,12 @@ end
 
    
 initial begin
-  gt_reset_all_in = 1'b0;
+  gt_reset_all_in = 6'h00;
   wait(rstn_apb3);
   repeat (10) @(posedge pl_clk);
-  gt_reset_all_in = 1'b1;
+  gt_reset_all_in = 6'h3F;
   repeat (10) @(posedge pl_clk);
-  gt_reset_all_in = 1'b0;
+  gt_reset_all_in = 6'h00;
 end //initial
 
 //int config_input_file;
@@ -299,7 +291,6 @@ initial begin
   apb3_write(ADDR_APB3_2_BASE+32'h200, 32'h1, 2);
 
   wait_apb3_clk(20);
-
   test_fixe_sanity();
 
   $finish();
@@ -315,9 +306,9 @@ initial begin
 end
 
  
-
   always @(*)
    begin
+   
        //For quad0 ch0
     force gt_loopback0_p_0  = EXDES.i_dcmac_0_exdes_support_wrapper.dcmac_0_exdes_support_i.dcmac_0_gt_wrapper.gt_quad_base.inst.quad_inst.CH0_GTMTXP_integer;
     force gt_loopback0_n_0 = EXDES.i_dcmac_0_exdes_support_wrapper.dcmac_0_exdes_support_i.dcmac_0_gt_wrapper.gt_quad_base.inst.quad_inst.CH0_GTMTXN_integer;
@@ -375,6 +366,7 @@ end
     force  EXDES.i_dcmac_0_exdes_support_wrapper.dcmac_0_exdes_support_i.dcmac_0_gt_wrapper.gt_quad_base_1.inst.quad_inst.CH3_GTMRXP_integer = gt_loopback3_p_1 ;
     force  EXDES.i_dcmac_0_exdes_support_wrapper.dcmac_0_exdes_support_i.dcmac_0_gt_wrapper.gt_quad_base_1.inst.quad_inst.CH3_GTMRXN_integer = gt_loopback3_n_1 ;
 
+
    end
 
 dcmac_0_exdes EXDES
@@ -397,6 +389,7 @@ dcmac_0_exdes EXDES
    .s_axi_rresp          (s_axi_rresp),
    .s_axi_rvalid         (s_axi_rvalid),
    .s_axi_rready         (s_axi_rready),
+
 
    .APB_M2_prdata        (EMU_AP3_M_prdata[2][31:0]),
    .APB_M2_pready        (EMU_AP3_M_pready[2]),
@@ -432,8 +425,8 @@ dcmac_0_exdes EXDES
    .gt_reset_all_in      (gt_reset_all_in),
    .gt_gpo               (gt_gpo),
    .gt_reset_done        (gt_reset_done),
-   .gt_reset_tx_datapath_in ('d0),
-   .gt_reset_rx_datapath_in ('d0),
+   .gt_reset_tx_datapath_in (8'd0),
+   .gt_reset_rx_datapath_in (8'd0),
    .gt_line_rate         (gt_line_rate),
    .gt_loopback          (gt_loopback),
    .gt_txprecursor       (gt_txprecursor),
@@ -447,8 +440,8 @@ dcmac_0_exdes EXDES
 
    .gt_ref_clk0_p        (gt_ref_clk_p),
    .gt_ref_clk0_n        (gt_ref_clk_n),
-   .gt_ref_clk1_p        (gt_ref_clk_p),
-   .gt_ref_clk1_n        (gt_ref_clk_n),
+//   .gt_ref_clk1_p        (gt_ref_clk_p),
+//   .gt_ref_clk1_n        (gt_ref_clk_n),
  
    .gt_rxn_in0           (),
    .gt_rxp_in0           (),
@@ -728,7 +721,6 @@ task latch_all;
     // tick all again
  //   axi_write(ADDR_AXI4_BASE+32'h000f4, 32'd1);
  //   axi_write(ADDR_AXI4_BASE+32'h000fc, 32'd1);
-
     for(int i=0; i<6; i=i+1) begin
       if (ch_ena[i]) begin
         if (i < 6) begin
@@ -737,7 +729,6 @@ task latch_all;
         end
       end
     end
-
     //delay to allow stats transfer
     wait_apb3_clk(100);
 
@@ -842,28 +833,25 @@ task config_mac;
     end*/
 
     for (int i = 1; i <= 6; i++) begin
-      //axi_write(ADDR_AXI4_BASE+32'h00004 + (i << 12), 32'h25800042);
       axi_write(ADDR_AXI4_BASE+32'h00004 + (i << 12), 32'h25800000);
       //axi_read(ADDR_AXI4_BASE+32'h00004 + (i << 12), prdata_out);
-      //$display($sformatf("CFG -- Writing to %x", prdata_out));
+      //$display($sformatf("CFG -- Writing to %x", prdata_out));    
     end
+ 
 
     for (int i = 1; i <= 6; i++) begin
       axi_write(ADDR_AXI4_BASE+32'h00000 + (i << 12), 32'h00000C21);
       //axi_read(ADDR_AXI4_BASE+32'h00000 + (i << 12), prdata_out);
-      //$display($sformatf("CFG -- Writing to %x", prdata_out));
+      //$display($sformatf("CFG -- Writing to %x", prdata_out));      
     end
-
-    //for (int i = 1; i <= 6; i++) begin
-    //  axi_write(ADDR_AXI4_BASE+32'h000ac + (i << 12), 32'h00000020);
-    //  axi_read(ADDR_AXI4_BASE+32'h000ac + (i << 12), prdata_out);
-    //  $display($sformatf("CFG -- Writing to %x", prdata_out));
-    //end
 
     wait_apb3_clk(20);
     $display($sformatf("CFG -- MAC Config Complete!"));
   end
 endtask
+
+
+
 
 
 task set_data_rate;
@@ -882,7 +870,7 @@ task set_data_rate;
 
       if (i_rate == R_100G) begin
         wdat[20:16] = 5'b00100; // 100G KP4
-        wdat[20:16] = 5'b00101; // 100G KR4
+        wdat[20:16] = 5'b00000; // 100G FEC DISABLED
       end
       else if (i_rate == R_200G) wdat[20:16] = 5'b01000; // 200G FEC
       else if (i_rate == R_400G) wdat[20:16] = 5'b10000; // 400G FEC
@@ -958,9 +946,13 @@ task client_release_flush;
   end
 endtask
 
+
+
+
 task check_sanity;
   begin
     for(int i=0; i<6; i=i+1) begin
+
       if (ch_ena[i]) begin
         // read DCMAC core stats counters
         if (i < 6) begin
@@ -1000,7 +992,9 @@ task check_sanity;
       end
     end
 
-    for (int i=0; i<6; i++) begin
+
+    for(int i=0; i<6; i=i+1) begin
+
       if (ch_ena[i]) begin
         $display("Channel[%2d] sent %d user packets", i, emu_frames_tx[i]);
         $display("Channel[%2d] received %d user packets", i, emu_frames_rx[i]);

@@ -63,17 +63,20 @@ module dcmac_0_axis_pkt_gen_dat_merge (
   o_dat
 );
 
+  parameter NUM_ID = 6;
+  localparam ID_W = (NUM_ID == 1) ? 1 : $clog2(NUM_ID);
+
   input  clk;
   input  rst;
-  input  [2:0] i_id_m1;
+  input  [ID_W-1:0] i_id_m1;
   input  [7:0] i_buf_size;
   input  [7:0] i_buf_idx;
   input  i_dat_ena;
   input  [191:0][7:0] i_dat;
-  output reg [2:0] o_id;
+  output reg [ID_W-1:0] o_id;
   output reg [191:0][7:0] o_dat;
 
-  reg   [3:0][2:0] id;
+  reg   [3:0][ID_W-1:0] id;
   logic [3:0][7:0] buf_size;
   logic [3:0][7:0] buf_idx;
   logic [3:0][1535:0] shift_dat_new;
@@ -127,7 +130,7 @@ module dcmac_0_axis_pkt_gen_dat_merge (
     .i_ena           (i_dat_ena),
     .i_dat           (buf_dat_i[0]),
     .o_dat           (buf_dat_o[0]),
-    .i_rd_during_wr  (),
+    .i_rd_during_wr  (1'b0),
     .o_init          ()
   );
 

@@ -60,64 +60,12 @@ module dcmac_0_exdes_imp_top
     input  wire [3:0] gt_rxp_in1,
     output wire [3:0] gt_txn_out1,
     output wire [3:0] gt_txp_out1,
-    //input  wire       gt_ref_clk1_p,
-    //input  wire       gt_ref_clk1_n,
+//    input  wire       gt_ref_clk1_p,
+//    input  wire       gt_ref_clk1_n,
     input  wire       gt_ref_clk0_p,
-    input  wire       gt_ref_clk0_n,
-    //DDR
-    output [0:0]CH0_DDR4_0_0_act_n,
-  output [16:0]CH0_DDR4_0_0_adr,
-  output [1:0]CH0_DDR4_0_0_ba,
-  output [0:0]CH0_DDR4_0_0_bg,
-  output [0:0]CH0_DDR4_0_0_ck_c,
-  output [0:0]CH0_DDR4_0_0_ck_t,
-  output [0:0]CH0_DDR4_0_0_cke,
-  output [0:0]CH0_DDR4_0_0_cs_n,
-  inout [8:0]CH0_DDR4_0_0_dm_n,
-  inout [71:0]CH0_DDR4_0_0_dq,
-  inout [8:0]CH0_DDR4_0_0_dqs_c,
-  inout [8:0]CH0_DDR4_0_0_dqs_t,
-  output [0:0]CH0_DDR4_0_0_odt,
-  output [0:0]CH0_DDR4_0_0_reset_n,
-  output [0:0]CH0_DDR4_0_1_act_n,
-  output [17:0]CH0_DDR4_0_1_adr,
-  input [0:0]CH0_DDR4_0_1_alert_n,
-  output [1:0]CH0_DDR4_0_1_ba,
-  output [1:0]CH0_DDR4_0_1_bg,
-  output [0:0]CH0_DDR4_0_1_ck_c,
-  output [0:0]CH0_DDR4_0_1_ck_t,
-  output [0:0]CH0_DDR4_0_1_cke,
-  output [0:0]CH0_DDR4_0_1_cs_n,
-  inout [71:0]CH0_DDR4_0_1_dq,
-  inout [17:0]CH0_DDR4_0_1_dqs_c,
-  inout [17:0]CH0_DDR4_0_1_dqs_t,
-  output [0:0]CH0_DDR4_0_1_odt,
-  output [0:0]CH0_DDR4_0_1_par,
-  output [0:0]CH0_DDR4_0_1_reset_n,
-  //pcie
-  input gt_pcie_refclk_clk_n,
-  input gt_pcie_refclk_clk_p,
-  input [7:0]gt_pciea1_grx_n,
-  input [7:0]gt_pciea1_grx_p,
-  output [7:0]gt_pciea1_gtx_n,
-  output [7:0]gt_pciea1_gtx_p,
-//hbm ref
-  input [0:0]hbm_ref_clk_0_clk_n,
-  input [0:0]hbm_ref_clk_0_clk_p,
-  input [0:0]hbm_ref_clk_1_clk_n,
-  input [0:0]hbm_ref_clk_1_clk_p,
-  
-  //smbus
-  inout smbus_0_scl_io,
-  inout smbus_0_sda_io,
-  input [0:0]sys_clk0_0_clk_n,
-  input [0:0]sys_clk0_0_clk_p,
-  input [0:0]sys_clk0_1_clk_n,
-  input [0:0]sys_clk0_1_clk_p
-  
-  
+    input  wire       gt_ref_clk0_n
     );
-    wire             gt_reset_all_in;
+    wire  [5:0]      gt_reset_all_in;   
     wire [31:0]      gt_gpo;
     wire             gt_reset_done;
     wire [7 :0]      gt_line_rate;
@@ -196,21 +144,16 @@ dcmac_0_exdes i_dcmac_0_exdes(
     .s_axi_rresp    (s_axi_rresp),     //output wire [1 : 0]   s_axi_rresp,
     .s_axi_rvalid   (s_axi_rvalid),    //output wire           s_axi_rvalid,
     .s_axi_rready   (s_axi_rready),    //input wire            s_axi_rready,
-    .gt_tx_reset_done_out (gt_tx_reset_done_out),
-    .gt_rx_reset_done_out (gt_rx_reset_done_out),
+
     .tx_serdes_reset (tx_serdes_reset),
     .rx_serdes_reset (rx_serdes_reset),
     .tx_core_reset   (tx_core_reset),
     .rx_core_reset   (rx_core_reset),
-    .gt_rxn_in0     (gt_rxn_in0 ),
-    .gt_rxp_in0     (gt_rxp_in0 ),
-    .gt_txn_out0    (gt_txn_out0),
-    .gt_txp_out0    (gt_txp_out0),
-    .gt_rxn_in1     (gt_rxn_in1 ),
-    .gt_rxp_in1     (gt_rxp_in1 ),
-    .gt_txn_out1    (gt_txn_out1),
-    .gt_txp_out1    (gt_txp_out1),
-    .gt_reset_all_in (gt_reset_all_in),//input  wire       gt_reset_all_in,
+    .gt_tx_reset_done_out (gt_tx_reset_done_out),
+    .gt_rx_reset_done_out (gt_rx_reset_done_out),    
+    .gt_tx_reset_core (),
+    .gt_rx_reset_core (),
+    .gt_reset_all_in (gt_reset_all_in),//input  wire       gt_reset_all_in,    
     .gt_gpo          (gt_gpo),//output  wire       gt_gpo,
     .gt_reset_done   (gt_reset_done),//output  wire       gt_reset_done,
     .gt_line_rate    (gt_line_rate),//input  wire [7:0]    gt_line_rate,
@@ -221,7 +164,16 @@ dcmac_0_exdes i_dcmac_0_exdes(
     .gt_rxcdrhold    (gt_rxcdrhold),//input  wire          gt_rxcdrhold,
     .gt_reset_tx_datapath_in (gt_reset_tx_datapath_in[8-1:0]),
     .gt_reset_rx_datapath_in (gt_reset_rx_datapath_in[8-1:0]),
+    .gt_rxn_in0     (gt_rxn_in0 ),
+    .gt_rxp_in0     (gt_rxp_in0 ),
+    .gt_txn_out0    (gt_txn_out0),
+    .gt_txp_out0    (gt_txp_out0),
+    .gt_rxn_in1     (gt_rxn_in1 ),
+    .gt_rxp_in1     (gt_rxp_in1 ),
+    .gt_txn_out1    (gt_txn_out1),
+    .gt_txp_out1    (gt_txp_out1),
     
+   
     .APB_M2_prdata   (APB_M2_prdata ),//output logic [31:0]  APB_M2_prdata,
     .APB_M2_pready   (APB_M2_pready ),//output logic [0:0]   APB_M2_pready,
     .APB_M2_pslverr  (APB_M2_pslverr),//output logic [0:0]   APB_M2_pslverr,
@@ -249,8 +201,8 @@ dcmac_0_exdes i_dcmac_0_exdes(
     .APB_M4_pwrite   (APB_M4_pwrite ),//input             APB_M4_pwrite,
     .gt_ref_clk0_p       (gt_ref_clk0_p),
     .gt_ref_clk0_n       (gt_ref_clk0_n),
-    //.gt_ref_clk1_p       (gt_ref_clk1_p),
-    //.gt_ref_clk1_n       (gt_ref_clk1_n),
+//    .gt_ref_clk1_p       (gt_ref_clk1_p),
+//    .gt_ref_clk1_n       (gt_ref_clk1_n),
     .init_clk        (pl0_ref_clk_0)//input  wire       init_clk
 );
    
@@ -433,61 +385,8 @@ dcmac_0_exdes i_dcmac_0_exdes(
     .M00_AXI_6_wready     (1'b0	),
     .M00_AXI_6_wstrb      (		),	
     .M00_AXI_6_wvalid     (		),		
-
-    .pl0_resetn_0       (pl0_resetn_0),
-    //added for AVED ports
-
-    .CH0_DDR4_0_0_act_n	(CH0_DDR4_0_0_act_n),
-  .CH0_DDR4_0_0_adr	(CH0_DDR4_0_0_adr),
-  .CH0_DDR4_0_0_ba	(CH0_DDR4_0_0_ba),
-  .CH0_DDR4_0_0_bg	(CH0_DDR4_0_0_bg),
-  .CH0_DDR4_0_0_ck_c	(CH0_DDR4_0_0_ck_c),
-  .CH0_DDR4_0_0_ck_t	(CH0_DDR4_0_0_ck_t),
-  .CH0_DDR4_0_0_cke	(CH0_DDR4_0_0_cke),
-  .CH0_DDR4_0_0_cs_n	(CH0_DDR4_0_0_cs_n),
-  .CH0_DDR4_0_0_dm_n	(CH0_DDR4_0_0_dm_n),
-  .CH0_DDR4_0_0_dq	(CH0_DDR4_0_0_dq),
-  .CH0_DDR4_0_0_dqs_c	(CH0_DDR4_0_0_dqs_c),
-  .CH0_DDR4_0_0_dqs_t	(CH0_DDR4_0_0_dqs_t),
-  .CH0_DDR4_0_0_odt	(CH0_DDR4_0_0_odt),
-  .CH0_DDR4_0_0_reset_n	(CH0_DDR4_0_0_reset_n),
-  .CH0_DDR4_0_1_act_n	(CH0_DDR4_0_1_act_n),
-  .CH0_DDR4_0_1_adr	(CH0_DDR4_0_1_adr),
-  .CH0_DDR4_0_1_alert_n	(CH0_DDR4_0_1_alert_n),
-  .CH0_DDR4_0_1_ba	(CH0_DDR4_0_1_ba),
-  .CH0_DDR4_0_1_bg	(CH0_DDR4_0_1_bg),
-  .CH0_DDR4_0_1_ck_c	(CH0_DDR4_0_1_ck_c),
-  .CH0_DDR4_0_1_ck_t	(CH0_DDR4_0_1_ck_t),
-  .CH0_DDR4_0_1_cke	(CH0_DDR4_0_1_cke),
-  .CH0_DDR4_0_1_cs_n	(CH0_DDR4_0_1_cs_n),
-  .CH0_DDR4_0_1_dq	(CH0_DDR4_0_1_dq),
-  .CH0_DDR4_0_1_dqs_c	(CH0_DDR4_0_1_dqs_c),
-  .CH0_DDR4_0_1_dqs_t	(CH0_DDR4_0_1_dqs_t),
-  .CH0_DDR4_0_1_odt	(CH0_DDR4_0_1_odt),
-  .CH0_DDR4_0_1_par	(CH0_DDR4_0_1_par),
-  .CH0_DDR4_0_1_reset_n	(CH0_DDR4_0_1_reset_n),
-  //pcie
-  .gt_pcie_refclk_clk_n	(gt_pcie_refclk_clk_n),
-  .gt_pcie_refclk_clk_p	(gt_pcie_refclk_clk_p),
-  .gt_pciea1_grx_n	(gt_pciea1_grx_n),
-  .gt_pciea1_grx_p	(gt_pciea1_grx_p),
-  .gt_pciea1_gtx_n	(gt_pciea1_gtx_n),
-  .gt_pciea1_gtx_p	(gt_pciea1_gtx_p),
-//hbm ref
-  .hbm_ref_clk_0_clk_n	(hbm_ref_clk_0_clk_n),
-  .hbm_ref_clk_0_clk_p	(hbm_ref_clk_0_clk_p),
-  .hbm_ref_clk_1_clk_n	(hbm_ref_clk_1_clk_n),
-  .hbm_ref_clk_1_clk_p	(hbm_ref_clk_1_clk_p),
-  
-  //smbus
-  .smbus_0_scl_io	(smbus_0_scl_io),
-  .smbus_0_sda_io	(smbus_0_sda_io),
-  .sys_clk0_0_clk_n	(sys_clk0_0_clk_n),
-  .sys_clk0_0_clk_p	(sys_clk0_0_clk_p),
-  .sys_clk0_1_clk_n	(sys_clk0_1_clk_n),
-  .sys_clk0_1_clk_p	(sys_clk0_1_clk_p)
-  
-  
+	
+    .pl0_resetn_0       (pl0_resetn_0)
 );
 
  

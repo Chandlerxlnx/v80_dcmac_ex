@@ -86,18 +86,23 @@ module dcmac_0_emu_register
   // calendar to drive macif tx
   input                               tx_macif_clk,
   input   wire                        tx_macif_ts_id_req_rdy,
-  output  wire    [5:0]               tx_macif_ts_id_req,
-  output  wire                        tx_macif_ts_id_req_vld,
+  output  reg    [5:0]                tx_macif_ts_id_req,
+  output  reg                         tx_macif_ts_id_req_vld,
+  // calendar to drive macif rx
+  input                               rx_macif_clk,
+  input   wire                        rx_macif_ts_id_req_rdy,
+  output  reg    [5:0]                rx_macif_ts_id_req,
+  output  reg                         rx_macif_ts_id_req_vld,
 
+  
   // packets/error count from packet gen/mon
   input   wire    [5:0][63:0]        client_tx_frames_transmitted_latched,
   input   wire    [5:0][63:0]        client_rx_frames_received_latched,
   input   wire    [5:0][63:0]        client_tx_bytes_transmitted_latched,
   input   wire    [5:0][63:0]        client_rx_bytes_received_latched,
-  input   wire    [5:0][31:0]         client_rx_preamble_err_cnt,
+  input   wire    [5:0][31:0]        client_rx_preamble_err_cnt,
   input   wire    [5:0]              client_rx_prbs_locked,
   input   wire    [5:0][31:0]        client_rx_prbs_err,
-
   // FIXE mode, gearbox FIFO error
   input   wire    [5:0]               gearbox_unf,
   input   wire    [5:0]               gearbox_ovf,
@@ -129,17 +134,16 @@ module dcmac_0_emu_register
   reg    [9:0]          axi_id_addra;
   reg    [5:0]          axi_id_dina;
   wire   [5:0]          axi_id_douta;
+
   reg                   id_ae, id_ae_reg;
   reg    [9:0]          addrb;
   wire   [5:0]          mem_out_id;
   reg                   mem_out_id_vld;
-
+  wire                  apb3_hard_rst;  
   wire  [31:0]          version;
-  wire                  abp3_hard_rst;
-
   wire  [39:0]          gearbox_unf_39_0, gearbox_ovf_39_0;
   logic [39:0][31:0]    rx_preamble_err_cnt;
-
+  
   logic [5:0][31:0] tx_byte_cnt_upper, tx_byte_cnt_lower,
                                tx_pkt_cnt_upper, tx_pkt_cnt_lower,
                                rx_byte_cnt_upper, rx_byte_cnt_lower,
@@ -157,15 +161,16 @@ module dcmac_0_emu_register
   assign version[31:8] = 0;
 
 
+ 
+
   assign gearbox_unf_39_0[39:0] = {34'd0, gearbox_unf};
   assign gearbox_ovf_39_0[39:0] = {34'd0, gearbox_ovf};
-
 
 
   always @* begin
     for (int i=0; i<6; i++) rx_preamble_err_cnt[i] = client_rx_preamble_err_cnt[i];
     for (int i=6; i<40; i++) rx_preamble_err_cnt[i] = '0;
-
+    
     for (int i=0; i<6; i++) begin
       {tx_byte_cnt_upper[i], tx_byte_cnt_lower[i]} = client_tx_bytes_transmitted_latched[i];
       {tx_pkt_cnt_upper[i],  tx_pkt_cnt_lower[i]}  = client_tx_frames_transmitted_latched[i];
@@ -176,7 +181,7 @@ module dcmac_0_emu_register
   end
 
   always @(posedge  apb3_clk) begin
-    if ( abp3_hard_rst ) begin
+    if ( apb3_hard_rst ) begin
       APB_M_paddr_r <= 32'h0;
       APB_M_penable_r <= 1'h0;
       APB_M_prdata <= 32'h0;
@@ -187,16 +192,12 @@ module dcmac_0_emu_register
       APB_M_pwrite_r <= 1'h0;
 
       memcel_apb3_reset <= 1'b0;
-
       scratch  <= 32'h0;
-
       tx_pkt_gen_ena        <= '0;
-      tx_pkt_gen_min_len    <= 64;
-      tx_pkt_gen_max_len    <= 9596;
       clear_tx_counters     <= '0;
       clear_rx_counters     <= '0;
-
-
+      tx_pkt_gen_min_len    <= 64;
+      tx_pkt_gen_max_len    <= 9596;
       tx_pause_req    <= '0;
       tx_resend_pause <= '0;
       tx_ptp_ena <= '0;
@@ -204,18 +205,15 @@ module dcmac_0_emu_register
       tx_ptp_upd_chksum <= 1'b0;
       // the minimum offset to the correction field should be 22 (Ethernet header + PTP header).
       tx_ptp_cf_offset <= 22;
-
-
       id_cnt <= '0;
+        
       axi_id_wea <= 1'b0;
       id_done <= 1'b0;
-
     end//rst
     else begin
 
       APB_M_pready <= 1'b0;
       APB_M_pslverr <= 1'b0;
-
       APB_M_paddr_r <= APB_M_paddr;
       APB_M_penable_r <= APB_M_penable;
       APB_M_psel_r <= APB_M_psel;
@@ -224,7 +222,6 @@ module dcmac_0_emu_register
 
       clear_tx_counters <= '0;
       clear_rx_counters <= '0;
-
       axi_id_wea <= 1'b0;
 
       case(client_apb_state)
@@ -234,6 +231,7 @@ module dcmac_0_emu_register
             if (APB_M_pwrite_r) begin
               //write
               if (APB_M_paddr_r[10:2] < 120) begin
+	      
                 axi_id_wea <= 1'b1;
                 axi_id_addra <= (APB_M_paddr_r[10:2] << 2) + APB_M_paddr_r[10:2] + id_cnt;
 
@@ -256,6 +254,7 @@ module dcmac_0_emu_register
                   id_cnt <= 3'd0;
                   if (APB_M_paddr_r[10:2] == 119) id_done <= 1'b1;
                 end
+		
               end
               else begin // >= 120
                 id_cnt <= 3'd0;
@@ -269,7 +268,9 @@ module dcmac_0_emu_register
                   end
 
                   9'h81: begin    //0x204
+		    
                     tx_pkt_gen_ena <= APB_M_pwdata_r[30:24];
+		    
                   end
 
                   9'h82: begin    //0x208
@@ -298,7 +299,6 @@ module dcmac_0_emu_register
                     tx_ptp_cf_offset[11:0] <= APB_M_pwdata_r[19:8];
                     tx_ptp_upd_chksum <= APB_M_pwdata_r[24];
                   end
-
                   9'h90: begin // 0x240
                     tx_pause_req[0][8:0] <= APB_M_pwdata_r[8:0];
                     tx_resend_pause[0] <= APB_M_pwdata_r[9];
@@ -335,13 +335,9 @@ module dcmac_0_emu_register
                     tx_ptp_ena[5] <= APB_M_pwdata_r[16];
                   end
 
-
-
-
                   9'hfe: begin    //0x3f8
                     scratch <= APB_M_pwdata_r[31:0];
                   end
-
 
                 endcase
               end // end >= 120
@@ -377,11 +373,10 @@ module dcmac_0_emu_register
                   10'h80: begin   //0x200
                     APB_M_prdata[0] <= memcel_apb3_reset;
                   end
-
+		  
                   10'h81: begin    //0x204
                     APB_M_prdata[30:24] <= tx_pkt_gen_ena;
                   end
-
                   10'h82: begin    //0x208
                     APB_M_prdata[31:16] <= tx_pkt_gen_max_len;
                     APB_M_prdata[15: 0] <= tx_pkt_gen_min_len;
@@ -392,7 +387,6 @@ module dcmac_0_emu_register
                     APB_M_prdata[19:8] <= tx_ptp_cf_offset[11:0];
                     APB_M_prdata[24] <= tx_ptp_upd_chksum;
                   end
-
                   10'h90: begin // 0x240
                     APB_M_prdata[8:0] <= tx_pause_req[0][8:0];
                     APB_M_prdata[9] <= tx_resend_pause[0];
@@ -698,10 +692,10 @@ module dcmac_0_emu_register
 
   dcmac_0_syncer_reset #(
     .RESET_PIPE_LEN (3)
-  ) i_dcmac_0_abp3_hard_rst_syncer (
+  ) i_dcmac_0_apb3_hard_rst_syncer (
     .clk            (apb3_clk),
     .reset_async    (~apb3_rstn | ~hard_rstn),
-    .reset          (abp3_hard_rst)
+    .reset          (apb3_hard_rst)
   );
 
   always @(posedge apb3_clk) begin
@@ -717,6 +711,7 @@ module dcmac_0_emu_register
   end
 
   assign apb3_rstn_out =  !memcel_apb3_reset_d[9];
+
 
 
 endmodule

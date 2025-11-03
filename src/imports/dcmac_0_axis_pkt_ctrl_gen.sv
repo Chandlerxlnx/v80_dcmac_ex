@@ -63,10 +63,12 @@ module dcmac_0_axis_pkt_ctrl_gen (
   o_pkt_ctrl
 );
 
+  parameter NUM_ID = 6;
+  localparam ID_W = (NUM_ID == 1) ? 1 : $clog2(NUM_ID);
   localparam int POLY = 17'b1_0110_1000_0000_0001; // the polynomial used to generate the random packet length
 
   typedef struct packed {
-    logic [2:0]          id;
+    logic [ID_W-1:0]     id;
     logic [11:0]         ena;
     logic [11:0][15:0]   pkt_len;
     logic [11:0]         sop;
@@ -79,18 +81,18 @@ module dcmac_0_axis_pkt_ctrl_gen (
 
   input   clk;
   input   rst;
-  input   [6:0] i_pkt_ena;
+  input   [NUM_ID:0] i_pkt_ena;
   input   [15:0] i_min_len;
   input   [15:0] i_max_len;
-  input   [2:0] i_req_id;
+  input   [ID_W-1:0] i_req_id;
   input   i_req_id_vld;
   output  reg [7:0] o_size;
   output  lbus_pkt_ctrl_t o_pkt_ctrl;
 
 
-  reg   [1:0][6:0] pkt_ena_reg;
+  reg   [1:0][NUM_ID:0] pkt_ena_reg;
   reg   [3:1] dat_req, pkt_ena;
-  reg   [3:1][2:0] id;
+  reg   [3:1][ID_W-1:0] id;
   logic [2:0][13:0] pkt_len_r;
   logic [2:1][2:0][13:0] pkt_len_r_p;
   reg   [2:0][9:0] num_seg_in_pkt;
@@ -448,7 +450,7 @@ module dcmac_0_axis_pkt_ctrl_gen (
 
   always @(posedge clk) begin
     pkt_ena_reg <= {pkt_ena_reg, i_pkt_ena};
-    pkt_ena[1] <= ((i_req_id < 6)? pkt_ena_reg[1][i_req_id] : 1'b0) | pkt_ena_reg[1][6];
+    pkt_ena[1] <= ((i_req_id < NUM_ID)? pkt_ena_reg[1][i_req_id] : 1'b0) | pkt_ena_reg[1][NUM_ID];
     pkt_ena[3:2] <= pkt_ena[2:1];
     pkt_on_going_i[3:3] <= pkt_on_going_i[2:2];
 
@@ -537,7 +539,7 @@ module dcmac_0_axis_pkt_ctrl_gen (
     .i_ena       (wr_cnt_max[2]),
     .i_dat       ({cnt_max_i[2], seg_r_i[2], byte_r_i[2]}),
     .o_dat       ({cnt_max_o[2], seg_r_o[2], byte_r_o[2]}),
-    .i_rd_during_wr  (),
+    .i_rd_during_wr  (1'b0),
     .o_init          ()
   );
 
@@ -552,15 +554,15 @@ module dcmac_0_axis_pkt_ctrl_gen (
     .i_ena       (dat_req[2]),
     .i_dat       ({pkt_on_going_i[2], cnt_i[2]}),
     .o_dat       ({pkt_on_going_o[2], cnt_o[2]}),
-    .i_rd_during_wr  (),
+    .i_rd_during_wr  (1'b0),
     .o_init          ()
   );
 
 
   // synthesis translate_off
   reg [5:0][2:0][13:0] pkt_len_p;
-  reg [6-1:0][13:0] pkt_len_mem, pkt_len_cal;
-  reg [6-1:0] pkt_on_going;
+  reg [NUM_ID-1:0][13:0] pkt_len_mem, pkt_len_cal;
+  reg [NUM_ID-1:0] pkt_on_going;
   logic [5:0] pkt_num;
   logic [3:3][11:0][13:0] pkt_len;
   logic pkt_err;

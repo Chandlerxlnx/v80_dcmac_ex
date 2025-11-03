@@ -62,7 +62,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 create_clock -period 3.103 -name gt_ref_clk0_p -waveform {0.000 1.552} [get_ports gt_ref_clk0_p]
-create_clock -period 3.103 -name gt_ref_clk1_p -waveform {0.000 1.552} [get_ports gt_ref_clk1_p]
+#create_clock -period 3.103 -name gt_ref_clk1_p -waveform {0.000 1.552} [get_ports gt_ref_clk1_p]
 
 ###  Note: These are auto-populated constraints. They may or may not meet your requirements. Please modify them accordingly based upon the DCMAC location, SLR region, and your specific requirements. ####
 set_property LOC GTM_QUAD_X1Y7       [get_cells -hier -filter {name =~ */gt_quad_base/inst/quad_inst}]
@@ -75,7 +75,31 @@ set_property LOC GTM_REFCLK_X1Y16 [get_cells -hier -filter {name =~ */util_ds_bu
 ## The design must meet the following rules when connecting the Versal Adaptive SoC DCMAC Hard IP core to the transceivers. 
 ##    - GT Quads have to be contiguous based on the DCMAC configuration.
 
+set_disable_timing -from RX_ALT_SERDES_CLK[0] -to RX_ALT_SERDES_CLK[1] [get_cells -hier -filter REF_NAME==DCMAC] 
+set_disable_timing -from RX_ALT_SERDES_CLK[1] -to RX_ALT_SERDES_CLK[0] [get_cells -hier -filter REF_NAME==DCMAC]
+set_disable_timing -from RX_ALT_SERDES_CLK[2] -to RX_ALT_SERDES_CLK[1] [get_cells -hier -filter REF_NAME==DCMAC] 
+set_disable_timing -from RX_ALT_SERDES_CLK[1] -to RX_ALT_SERDES_CLK[2] [get_cells -hier -filter REF_NAME==DCMAC]
+set_disable_timing -from RX_ALT_SERDES_CLK[2] -to RX_ALT_SERDES_CLK[0] [get_cells -hier -filter REF_NAME==DCMAC] 
+set_disable_timing -from RX_ALT_SERDES_CLK[0] -to RX_ALT_SERDES_CLK[2] [get_cells -hier -filter REF_NAME==DCMAC] 
+
+set_disable_timing -from RX_SERDES_CLK[0] -to RX_SERDES_CLK[1] [get_cells -hier -filter REF_NAME==DCMAC] 
+set_disable_timing -from RX_SERDES_CLK[1] -to RX_SERDES_CLK[0] [get_cells -hier -filter REF_NAME==DCMAC]
+set_disable_timing -from RX_SERDES_CLK[2] -to RX_SERDES_CLK[1] [get_cells -hier -filter REF_NAME==DCMAC] 
+set_disable_timing -from RX_SERDES_CLK[1] -to RX_SERDES_CLK[2] [get_cells -hier -filter REF_NAME==DCMAC]
+set_disable_timing -from RX_SERDES_CLK[2] -to RX_SERDES_CLK[0] [get_cells -hier -filter REF_NAME==DCMAC] 
+set_disable_timing -from RX_SERDES_CLK[0] -to RX_SERDES_CLK[2] [get_cells -hier -filter REF_NAME==DCMAC] 
+
+
+## Additional false path constraints within the Gen/Mon
+set_false_path -from [get_clocks clk_pl_0] -to [get_clocks -of_objects [get_pins -of [get_cells -hier -filter {name =~ */i_*_clk_wiz*/inst/clock_primitive_inst/MMCME5_inst}] -filter {name =~ *CLKOUT*}]]
+set_false_path -from [get_clocks -of_objects [get_pins -of [get_cells -hier -filter {name =~ */i_*_clk_wiz*/inst/clock_primitive_inst/MMCME5_inst}] -filter {name =~ *CLKOUT*}]] -to [get_clocks clk_pl_0]
+
+
+
+
+
 #### Waivers ####
+
 create_waiver -quiet -type CDC -id {CDC-1} -user "dcmac" -desc "This tx_pkt_gen_max_len register drives the pkt_len_r register and registered on the destination clocks" -tags "1103070"\
 -from [get_pins -of [get_cells -hier -filter {name =~ */*emu_register/tx_pkt_gen_max_len_reg*}] -filter { name =~ *C } ]\
 -to [get_pins -of [get_cells -hier -filter {name =~ */*_axis_pkt_gen_ts/*ctrl_gen/pkt_len_r_reg*}] -filter { name =~ *D } ]
@@ -98,7 +122,7 @@ create_waiver -quiet -type CDC -id {CDC-1} -user "dcmac" -desc "This scratch reg
 
 create_waiver -quiet -type CDC -id {CDC-1} -user "dcmac" -desc "The CDC-1 warning is waived as it is a level signal in reset path. This is safe to ignore" -tags "1103070"\
 -from [get_pins -of [get_cells -hier -filter {name =~ */*emu_register/memcel_apb3_reset_d_reg*}] -filter { name =~ *C } ]\
--to [get_pins -of [get_cells -hier -filter {name =~ */*sniffer/cal_cnt_reg*}] -filter { name =~ *R } ]
+-to [get_pins -of [get_cells -hier -filter {name =~ */*cal_cnt_reg*}] -filter { name =~ *R } ]
 
 create_waiver -quiet -type CDC -id {CDC-1} -user "dcmac" -desc "The CDC-1 warning is waived as it is a level signal in reset path. This is safe to ignore" -tags "1103070"\
 -from [get_pins -of [get_cells -hier -filter {name =~ */*emu_register/memcel_apb3_reset_d_reg*}] -filter { name =~ *C } ]\
@@ -134,6 +158,10 @@ create_waiver -quiet -type CDC -id {CDC-1} -user "dcmac" -desc "This multi bit c
 -to [get_pins -of [get_cells -hier -filter {name =~ */*axis_pkt_*_ts/*_pkt_cnt_*_inst/clear_rx_counters_reg*}] -filter { name =~ *D } ]
 
 create_waiver -quiet -type CDC -id {CDC-5} -user "dcmac" -desc "This multi bit clear counter registered with destination clock not needed syncer" -tags "1103070"\
+-from [get_pins -of [get_cells -hier -filter {name =~ */*emu_register/clear_*x_counters_reg*}] -filter { name =~ *C } ]\
+-to [get_pins -of [get_cells -hier -filter {name =~ */*axis_pkt_*_ts/*_pkt_cnt_*_inst/clear_rx_counters_reg*}] -filter { name =~ *D } ]
+
+create_waiver -quiet -type CDC -id {CDC-2} -user "dcmac" -desc "This multi bit clear counter registered with destination clock not needed syncer" -tags "1103070"\
 -from [get_pins -of [get_cells -hier -filter {name =~ */*emu_register/clear_*x_counters_reg*}] -filter { name =~ *C } ]\
 -to [get_pins -of [get_cells -hier -filter {name =~ */*axis_pkt_*_ts/*_pkt_cnt_*_inst/clear_rx_counters_reg*}] -filter { name =~ *D } ]
 
@@ -173,12 +201,9 @@ create_waiver -quiet -type CDC -id {CDC-1} -user "dcmac" -desc "The CDC-1 warnin
 #-to [get_pins {i_*_exdes/i_*_exdes_support_wrapper/*_exdes_support_i/*_gt_wrapper/gt_quad_base*/inst/quad_inst/CH*_TXDATA[*]}]
 ####
 
-## Additional false path constraints within the Gen/Mon
-set_false_path -from [get_clocks clk_pl_0] -to [get_clocks -of_objects [get_pins -of [get_cells -hier -filter {name =~ */i_*_clk_wiz*/inst/clock_primitive_inst/MMCME5_inst}] -filter {name =~ *CLKOUT*}]]
-set_false_path -from [get_clocks -of_objects [get_pins -of [get_cells -hier -filter {name =~ */i_*_clk_wiz*/inst/clock_primitive_inst/MMCME5_inst}] -filter {name =~ *CLKOUT*}]] -to [get_clocks clk_pl_0]
-
-
-
+create_waiver -quiet -type CDC -id {CDC-10} -user "dcmac" -desc "The CDC-10 warning is waived as it is a level signal in reset path. This is safe to ignore" -tags "1103070"\
+-from [get_pins -of [get_cells -hier -filter {name =~ */gpio_core*/*Dual.gpio_Data_Out_reg*}] -filter { name =~ *C } ]\
+-to [get_pins -of [get_cells -hier -filter {name =~ *exdes/*reset_done_core_clk_syncer/reset_pipe_retime_reg*}] -filter { name =~ *CLR }]
 
 create_waiver -quiet -type CDC -id {CDC-4} -user "dcmac" -desc "This tx_pkt_gen_min_len_reg register drives pkt_len_r_reg and registered on the destination clock" -tags "1103070"\
 -from [get_pins -of [get_cells -hier -filter {name =~ */tx_pkt_gen_min_len_reg[*]}] -filter { name =~ *C } ]\
@@ -187,7 +212,6 @@ create_waiver -quiet -type CDC -id {CDC-4} -user "dcmac" -desc "This tx_pkt_gen_
 create_waiver -quiet -type CDC -id {CDC-4} -user "dcmac" -desc "This o_emu_rx_rst_reg register drives o_prbs_locked_reg and registered on the destination clock" -tags "1103070"\
 -from [get_pins -of [get_cells -hier -filter {name =~ */*core_sniffer/o_emu_rx_rst_reg[*]}] -filter { name =~ *C } ]\
 -to [get_pins -of [get_cells -hier -filter {name =~ */*axis_pkt_mon_ts/o_prbs_locked_reg[*]}] -filter { name =~ *D } ]
-
 
 
 create_waiver -quiet -type CDC -id {CDC-13} -user "dcmac" -desc "The CDC-13 warning is waived as it is a level signal in reset path. This is safe to ignore" -tags "1103070"\
@@ -203,5 +227,17 @@ create_waiver -quiet -type CDC -id {CDC-5} -user "dcmac" -desc "The path is regi
 -from [get_pins -of [get_cells -hier -filter {name =~ */*emu_register/tx_pkt_gen_ena*}] -filter {name =~ *C}]\
 -to [get_pins -of [get_cells -hier -filter {name =~ */*axis_pkt_gen_ts/*_ctrl_gen/pkt_ena*}] -filter {name =~ *D}]
 
-create_waiver -quiet -type DRC -id {REQP-2057} -user "dcmac" -desc "REQP-2057 is waived as the MBUFG_GT CLR and CLRBLEAF pins are connected with the GT Reset IP" -tags "1138767" -objects [get_cells -hier -filter {REF_NAME==MBUFG_GT && NAME=~ */*_exdes_support*/*gt_wrapper*/*}]
+create_waiver -quiet -type DRC -id {REQP-2057} -user "dcmac" -desc "REQP-2057 is waived as the MBUFG_GT CLR and CLRBLEAF pins are connected with the GT Reset IP" -tags "1138767" -objects [get_cells -hier -filter {REF_NAME==MBUFG_GT && NAME=~ */*exdes*/*}]
+
+create_waiver -quiet -type CDC -id {CDC-1} -user "dcmac" -desc "The CDC-1 warning is waived as it is a level signal in reset path. This is safe to ignore" -tags "1103070"\
+-from [get_pins -of [get_cells -hier -filter {name =~ */*core_sniffer/o_emu_rx_rst_reg*}] -filter { name =~ *C}]\
+-to [get_pins -of [get_cells -hier -filter {name =~ */*emu_gearbox_rx/pkt_reg*}] -filter { name =~ *R}]
+
+create_waiver -quiet -type CDC -id {CDC-1} -user "dcmac" -desc "This o_emu_rx_rst_reg register drives o_prbs_locked_reg and registered on the destination clock" -tags "1103070"\
+-from [get_pins -of [get_cells -hier -filter {name =~ */*core_sniffer/o_emu_rx_rst_reg[*]}] -filter { name =~ *C } ]\
+-to [get_pins -of [get_cells -hier -filter {name =~ */*axis_pkt_mon_ts/o_prbs_locked_reg[*]}] -filter { name =~ *D } ]
+
+create_waiver -quiet -type CDC -id {CDC-2} -user "dcmac" -desc "The path is registered and it does not require ASYNC_REG" -tags "1103070"\
+-from [get_pins -of [get_cells -hier -filter {name =~ */*emu_register/tx_pkt_gen_ena_reg*}] -filter { name =~ *C } ]\
+-to [get_pins -of [get_cells -hier -filter {name =~ */*_axis_pkt_gen_ts/*ctrl_gen/pkt_ena_reg*}] -filter { name =~ *D } ]
 
