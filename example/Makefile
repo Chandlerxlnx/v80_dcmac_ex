@@ -2,6 +2,8 @@ DCMAC_EX_PRJ=dcmac_0_ex/dcmac_0_ex.xpr
 SCRIPT_OUT=./output/dcmac_0_exdes_support.tcl
 XDC_OUT=dcmac_0_example_top.xdc
 
+all:  ./output/dcmac_ex.md
+
 ./output:
 	mkdir -p ./output
 cp_output: ./output/dcmac_ex.md
@@ -11,9 +13,7 @@ cp_output: ./output/dcmac_ex.md
 	#mv crt_dcmac_0_exdes_support.tcl ./output
 	date|tee ./output/dcmac_ex.md
 
-all:  ./output/dcmac_ex.md
-
-v80_eco:dcmac_0_ex/imports/dcmac_0_example_top.xdc
+v80_eco:dcmac_0_ex/imports/$(XDC_OUT)
 
 dcmac_0_ex/imports/$(XDC_OUT): $(SCRIPT_OUT)
 	sed -i '/gt_ref_clk1_/s/^/\/\//g' dcmac_0_ex/imports/*.sv
