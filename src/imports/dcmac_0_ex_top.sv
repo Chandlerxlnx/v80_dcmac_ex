@@ -117,7 +117,7 @@ module dcmac_0_ex_top
   
   
     );
-    wire             gt_reset_all_in;
+    wire [5:0]       gt_reset_all_in;
     wire [31:0]      gt_gpo;
     wire             gt_reset_done;
     wire [7 :0]      gt_line_rate;

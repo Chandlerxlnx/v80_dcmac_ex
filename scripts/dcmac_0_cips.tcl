@@ -20,7 +20,7 @@ set script_folder [_tcl::get_script_folder]
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2024.2
+set scripts_vivado_version 2025.1
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
@@ -742,7 +742,6 @@ proc create_root_design { parentCell } {
 
 
   # Create ports
-  set gt_reset_all_in [ create_bd_port -dir O -from 0 -to 0 -type rst gt_reset_all_in ]
   set gt_line_rate [ create_bd_port -dir O -from 7 -to 0 -type data gt_line_rate ]
   set gt_loopback [ create_bd_port -dir O -from 2 -to 0 -type data gt_loopback ]
   set gt_txprecursor [ create_bd_port -dir O -from 5 -to 0 -type data gt_txprecursor ]
@@ -763,6 +762,7 @@ proc create_root_design { parentCell } {
    CONFIG.ASSOCIATED_RESET {pl0_resetn_0} \
  ] $pl0_ref_clk_0
   set pl0_resetn_0 [ create_bd_port -dir O -from 0 -to 0 -type rst pl0_resetn_0 ]
+  set gt_reset_all_in [ create_bd_port -dir O -from 5 -to 0 gt_reset_all_in ]
 
   # Create instance: axi_apb_bridge_0, and set properties
   set axi_apb_bridge_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_apb_bridge axi_apb_bridge_0 ]
@@ -811,23 +811,30 @@ proc create_root_design { parentCell } {
 
   # Create instance: axi_gpio_gt_ctl, and set properties
   set axi_gpio_gt_ctl [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio axi_gpio_gt_ctl ]
-  set_property CONFIG.C_ALL_OUTPUTS {1} $axi_gpio_gt_ctl
+  set_property -dict [list \
+    CONFIG.C_ALL_OUTPUTS {1} \
+    CONFIG.C_ALL_OUTPUTS_2 {1} \
+    CONFIG.C_GPIO2_WIDTH {6} \
+    CONFIG.C_IS_DUAL {1} \
+  ] $axi_gpio_gt_ctl
 
 
   # Create instance: xlslice_gt_reset, and set properties
   set xlslice_gt_reset [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice xlslice_gt_reset ]
   set_property -dict [list \
-    CONFIG.DIN_FROM {0} \
+    CONFIG.DIN_FROM {5} \
     CONFIG.DIN_TO {0} \
-    CONFIG.DOUT_WIDTH {1} \
+    CONFIG.DIN_WIDTH {6} \
+    CONFIG.DOUT_WIDTH {6} \
   ] $xlslice_gt_reset
 
 
   # Create instance: xlslice_gt_line_rate, and set properties
   set xlslice_gt_line_rate [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice xlslice_gt_line_rate ]
   set_property -dict [list \
-    CONFIG.DIN_FROM {8} \
-    CONFIG.DIN_TO {1} \
+    CONFIG.DIN_FROM {7} \
+    CONFIG.DIN_TO {0} \
+    CONFIG.DIN_WIDTH {31} \
     CONFIG.DOUT_WIDTH {8} \
   ] $xlslice_gt_line_rate
 
@@ -835,8 +842,9 @@ proc create_root_design { parentCell } {
   # Create instance: xlslice_gt_loopback, and set properties
   set xlslice_gt_loopback [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice xlslice_gt_loopback ]
   set_property -dict [list \
-    CONFIG.DIN_FROM {11} \
-    CONFIG.DIN_TO {9} \
+    CONFIG.DIN_FROM {10} \
+    CONFIG.DIN_TO {8} \
+    CONFIG.DIN_WIDTH {31} \
     CONFIG.DOUT_WIDTH {3} \
   ] $xlslice_gt_loopback
 
@@ -844,8 +852,9 @@ proc create_root_design { parentCell } {
   # Create instance: xlslice_gt_txprecursor, and set properties
   set xlslice_gt_txprecursor [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice xlslice_gt_txprecursor ]
   set_property -dict [list \
-    CONFIG.DIN_FROM {17} \
-    CONFIG.DIN_TO {12} \
+    CONFIG.DIN_FROM {16} \
+    CONFIG.DIN_TO {11} \
+    CONFIG.DIN_WIDTH {31} \
     CONFIG.DOUT_WIDTH {6} \
   ] $xlslice_gt_txprecursor
 
@@ -853,8 +862,9 @@ proc create_root_design { parentCell } {
   # Create instance: xlslice_gt_txpostcursor, and set properties
   set xlslice_gt_txpostcursor [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice xlslice_gt_txpostcursor ]
   set_property -dict [list \
-    CONFIG.DIN_FROM {23} \
-    CONFIG.DIN_TO {18} \
+    CONFIG.DIN_FROM {22} \
+    CONFIG.DIN_TO {17} \
+    CONFIG.DIN_WIDTH {31} \
     CONFIG.DOUT_WIDTH {6} \
   ] $xlslice_gt_txpostcursor
 
@@ -862,8 +872,9 @@ proc create_root_design { parentCell } {
   # Create instance: xlslice_gt_txmaincursor, and set properties
   set xlslice_gt_txmaincursor [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice xlslice_gt_txmaincursor ]
   set_property -dict [list \
-    CONFIG.DIN_FROM {30} \
-    CONFIG.DIN_TO {24} \
+    CONFIG.DIN_FROM {29} \
+    CONFIG.DIN_TO {23} \
+    CONFIG.DIN_WIDTH {31} \
     CONFIG.DOUT_WIDTH {7} \
   ] $xlslice_gt_txmaincursor
 
@@ -871,8 +882,9 @@ proc create_root_design { parentCell } {
   # Create instance: xlslice_gt_rxcdrhold, and set properties
   set xlslice_gt_rxcdrhold [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice xlslice_gt_rxcdrhold ]
   set_property -dict [list \
-    CONFIG.DIN_FROM {31} \
-    CONFIG.DIN_TO {31} \
+    CONFIG.DIN_FROM {30} \
+    CONFIG.DIN_TO {30} \
+    CONFIG.DIN_WIDTH {31} \
     CONFIG.DOUT_WIDTH {1} \
   ] $xlslice_gt_rxcdrhold
 
@@ -1182,7 +1194,7 @@ proc create_root_design { parentCell } {
 
   set_property -dict [ list \
    CONFIG.CONNECTIONS {HBM10_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} M02_INI {read_bw {800} write_bw {800} read_avg_burst {64} write_avg_burst {64}} HBM15_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM10_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM5_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM15_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM5_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM1_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM1_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM6_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM12_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM0_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM6_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM14_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM12_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM0_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM8_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM8_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM14_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM3_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM3_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM4_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM4_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM9_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM2_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM11_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} M00_INI {read_bw {800} write_bw {800} read_avg_burst {64} write_avg_burst {64}} HBM9_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM11_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM7_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM13_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM7_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM13_PORT0 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM2_PORT2 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} M00_AXI {read_bw {5} write_bw {5} read_avg_burst {64} write_avg_burst {64}}} \
-   CONFIG.DEST_IDS {M00_AXI:0x40} \
+   CONFIG.DEST_IDS {M00_AXI:0xc0} \
    CONFIG.REMAPS {M00_INI {{0x20108000000 0x00038000000 0x08000000}}} \
    CONFIG.NOC_PARAMS {} \
    CONFIG.CATEGORY {ps_pcie} \
@@ -1190,7 +1202,7 @@ proc create_root_design { parentCell } {
 
   set_property -dict [ list \
    CONFIG.CONNECTIONS {HBM10_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM10_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM5_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM15_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM0_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM15_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM1_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM5_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM1_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} M01_INI {read_bw {800} write_bw {800} read_avg_burst {64} write_avg_burst {64}} HBM0_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM6_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM8_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM14_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM12_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM6_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM12_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM8_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM14_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM3_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM3_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM4_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM9_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM4_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM9_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM11_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM11_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM7_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM13_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM7_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} HBM2_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} M03_INI {read_bw {800} write_bw {800} read_avg_burst {64} write_avg_burst {64}} HBM2_PORT1 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}} M00_AXI {read_bw {5} write_bw {5} read_avg_burst {64} write_avg_burst {64}} HBM13_PORT3 {read_bw {250} write_bw {250} read_avg_burst {4} write_avg_burst {4}}} \
-   CONFIG.DEST_IDS {M00_AXI:0x40} \
+   CONFIG.DEST_IDS {M00_AXI:0xc0} \
    CONFIG.NOC_PARAMS {} \
    CONFIG.CATEGORY {ps_pcie} \
  ] [get_bd_intf_pins /axi_noc_cips/S01_AXI]
@@ -1211,7 +1223,7 @@ proc create_root_design { parentCell } {
 
   set_property -dict [ list \
    CONFIG.CONNECTIONS {M01_INI {read_bw {500} write_bw {500}} M03_INI {read_bw {500} write_bw {500}} M00_AXI {read_bw {500} write_bw {500} read_avg_burst {4} write_avg_burst {4}}} \
-   CONFIG.DEST_IDS {M00_AXI:0x40} \
+   CONFIG.DEST_IDS {M00_AXI:0xc0} \
    CONFIG.NOC_PARAMS {} \
    CONFIG.CATEGORY {ps_nci} \
  ] [get_bd_intf_pins /axi_noc_cips/S04_AXI]
@@ -1377,8 +1389,9 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net sys_clk0_1_1 [get_bd_intf_ports sys_clk0_1] [get_bd_intf_pins axi_noc_mc_ddr4_1/sys_clk0]
 
   # Create port connections
+  connect_bd_net -net axi_gpio_gt_ctl_gpio2_io_o  [get_bd_pins axi_gpio_gt_ctl/gpio2_io_o] \
+  [get_bd_pins xlslice_gt_reset/Din]
   connect_bd_net -net axi_gpio_gt_ctl_gpio_io_o  [get_bd_pins axi_gpio_gt_ctl/gpio_io_o] \
-  [get_bd_pins xlslice_gt_reset/Din] \
   [get_bd_pins xlslice_gt_line_rate/Din] \
   [get_bd_pins xlslice_gt_loopback/Din] \
   [get_bd_pins xlslice_gt_txprecursor/Din] \
@@ -1601,8 +1614,7 @@ proc create_root_design { parentCell } {
 
   # Restore current instance
   current_bd_instance $oldCurInst
-  
-  validate_bd_design
+
   save_bd_design
 }
 # End of create_root_design()
